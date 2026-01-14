@@ -1,0 +1,1416 @@
+====================================================================================================
+ARBITRAGE OPPORTUNITIES REPORT
+Generated: 2026-01-14 20:56:04
+====================================================================================================
+
+Total Opportunities Found: 38
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #1
+----------------------------------------------------------------------------------------------------
+
+Question: Will LeBron James win the 2028 US Presidential Election?
+Market ID: 561251
+Slug: will-lebron-james-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.009
+    - NO:  $0.992
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.895
+    - NO:  $0.136
+    - Sum: $1.031
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.145
+  Guaranteed Profit: $0.855
+  ROI: 592.04%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.009 on YES
+  2. On Application 2: Bet $0.136 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.855
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.145, Profit: $0.855, ROI: 592.04%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.887, Profit: $-0.887, ROI: -46.99%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #2
+----------------------------------------------------------------------------------------------------
+
+Question: Will Kamala Harris win the 2028 US Presidential Election?
+Market ID: 561239
+Slug: will-kamala-harris-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.024
+    - NO:  $0.977
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.822
+    - NO:  $0.154
+    - Sum: $0.976
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.177
+  Guaranteed Profit: $0.823
+  ROI: 463.38%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.024 on YES
+  2. On Application 2: Bet $0.154 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.823
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.177, Profit: $0.823, ROI: 463.38%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.798, Profit: $-0.798, ROI: -44.40%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #3
+----------------------------------------------------------------------------------------------------
+
+Question: Will the Houston Texans win Super Bowl 2026?
+Market ID: 540218
+Slug: will-the-houston-texans-win-super-bowl-2026
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.088
+    - NO:  $0.911
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.886
+    - NO:  $0.134
+    - Sum: $1.020
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.223
+  Guaranteed Profit: $0.777
+  ROI: 349.44%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.088 on YES
+  2. On Application 2: Bet $0.134 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.777
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.223, Profit: $0.777, ROI: 349.44%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.797, Profit: $-0.797, ROI: -44.37%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #4
+----------------------------------------------------------------------------------------------------
+
+Question: Will Ron DeSantis win the 2028 US Presidential Election?
+Market ID: 561246
+Slug: will-ron-desantis-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.015
+    - NO:  $0.986
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.739
+    - NO:  $0.227
+    - Sum: $0.966
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.242
+  Guaranteed Profit: $0.758
+  ROI: 314.08%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.015 on YES
+  2. On Application 2: Bet $0.227 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.758
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.242, Profit: $0.758, ROI: 314.08%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.724, Profit: $-0.724, ROI: -42.01%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #5
+----------------------------------------------------------------------------------------------------
+
+Question: Will Andy Beshear win the 2028 US Presidential Election?
+Market ID: 561237
+Slug: will-andy-beshear-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.017
+    - NO:  $0.984
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.720
+    - NO:  $0.297
+    - Sum: $1.017
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.314
+  Guaranteed Profit: $0.686
+  ROI: 218.98%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.017 on YES
+  2. On Application 2: Bet $0.297 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.686
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.314, Profit: $0.686, ROI: 218.98%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.704, Profit: $-0.704, ROI: -41.30%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #6
+----------------------------------------------------------------------------------------------------
+
+Question: Will Alexandria Ocasio-Cortez win the 2028 US Presidential Election?
+Market ID: 561231
+Slug: will-alexandria-ocasio-cortez-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.075
+    - NO:  $0.925
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.796
+    - NO:  $0.246
+    - Sum: $1.042
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.321
+  Guaranteed Profit: $0.679
+  ROI: 211.53%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.075 on YES
+  2. On Application 2: Bet $0.246 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.679
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.321, Profit: $0.679, ROI: 211.53%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.721, Profit: $-0.721, ROI: -41.89%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #7
+----------------------------------------------------------------------------------------------------
+
+Question: Will Stephen Smith win the 2028 US Presidential Election?
+Market ID: 561240
+Slug: will-stephen-smith-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.007
+    - NO:  $0.993
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.673
+    - NO:  $0.314
+    - Sum: $0.987
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.322
+  Guaranteed Profit: $0.678
+  ROI: 211.04%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.007 on YES
+  2. On Application 2: Bet $0.314 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.678
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.322, Profit: $0.678, ROI: 211.04%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.666, Profit: $-0.666, ROI: -39.96%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #8
+----------------------------------------------------------------------------------------------------
+
+Question: Will Jamie Dimon win the 2028 US Presidential Election?
+Market ID: 561258
+Slug: will-jamie-dimon-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.006
+    - NO:  $0.994
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.726
+    - NO:  $0.322
+    - Sum: $1.048
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.329
+  Guaranteed Profit: $0.671
+  ROI: 204.41%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.006 on YES
+  2. On Application 2: Bet $0.322 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.671
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.329, Profit: $0.671, ROI: 204.41%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.720, Profit: $-0.720, ROI: -41.84%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #9
+----------------------------------------------------------------------------------------------------
+
+Question: Will Greg Abbott win the 2028 US Presidential Election?
+Market ID: 561249
+Slug: will-greg-abbott-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.006
+    - NO:  $0.994
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.715
+    - NO:  $0.332
+    - Sum: $1.047
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.339
+  Guaranteed Profit: $0.661
+  ROI: 195.42%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.006 on YES
+  2. On Application 2: Bet $0.332 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.661
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.339, Profit: $0.661, ROI: 195.42%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.708, Profit: $-0.708, ROI: -41.47%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #10
+----------------------------------------------------------------------------------------------------
+
+Question: Will Glenn Youngkin win the 2028 US Presidential Election?
+Market ID: 561238
+Slug: will-glenn-youngkin-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.007
+    - NO:  $0.993
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.100
+    - NO:  $0.337
+    - Sum: $0.437
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.345
+  Guaranteed Profit: $0.655
+  ROI: 190.28%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.007 on YES
+  2. On Application 2: Bet $0.337 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.655
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.345, Profit: $0.655, ROI: 190.28%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.093, Profit: $-0.093, ROI: -8.47%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #11
+----------------------------------------------------------------------------------------------------
+
+Question: Will Tim Walz win the 2028 US Presidential Election?
+Market ID: 561247
+Slug: will-tim-walz-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.005
+    - NO:  $0.995
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.610
+    - NO:  $0.412
+    - Sum: $1.022
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.417
+  Guaranteed Profit: $0.583
+  ROI: 139.52%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.005 on YES
+  2. On Application 2: Bet $0.412 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.583
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.417, Profit: $0.583, ROI: 139.52%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.605, Profit: $-0.605, ROI: -37.68%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #12
+----------------------------------------------------------------------------------------------------
+
+Question: Will Donald Trump Jr. win the 2028 US Presidential Election?
+Market ID: 561244
+Slug: will-donald-trump-jr-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.011
+    - NO:  $0.989
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.564
+    - NO:  $0.409
+    - Sum: $0.973
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.420
+  Guaranteed Profit: $0.580
+  ROI: 137.81%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.011 on YES
+  2. On Application 2: Bet $0.409 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.580
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.420, Profit: $0.580, ROI: 137.81%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.552, Profit: $-0.552, ROI: -35.59%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #13
+----------------------------------------------------------------------------------------------------
+
+Question: Will the Seattle Seahawks win Super Bowl 2026?
+Market ID: 540234
+Slug: will-the-seattle-seahawks-win-super-bowl-2026
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.238
+    - NO:  $0.761
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.767
+    - NO:  $0.197
+    - Sum: $0.964
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.435
+  Guaranteed Profit: $0.565
+  ROI: 129.62%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.238 on YES
+  2. On Application 2: Bet $0.197 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.565
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.435, Profit: $0.565, ROI: 129.62%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.528, Profit: $-0.528, ROI: -34.58%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #14
+----------------------------------------------------------------------------------------------------
+
+Question: Will Zohran Mamdani win the 2028 US Presidential Election?
+Market ID: 561256
+Slug: will-zohran-mamdani-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.006
+    - NO:  $0.994
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.576
+    - NO:  $0.431
+    - Sum: $1.007
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.438
+  Guaranteed Profit: $0.562
+  ROI: 128.57%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.006 on YES
+  2. On Application 2: Bet $0.431 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.562
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.438, Profit: $0.562, ROI: 128.57%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.570, Profit: $-0.570, ROI: -36.29%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #15
+----------------------------------------------------------------------------------------------------
+
+Question: Will Gretchen Whitmer win the 2028 US Presidential Election?
+Market ID: 561236
+Slug: will-gretchen-whitmer-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.009
+    - NO:  $0.992
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.749
+    - NO:  $0.454
+    - Sum: $1.203
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.463
+  Guaranteed Profit: $0.537
+  ROI: 116.22%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.009 on YES
+  2. On Application 2: Bet $0.454 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.537
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.463, Profit: $0.537, ROI: 116.22%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.740, Profit: $-0.740, ROI: -42.55%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #16
+----------------------------------------------------------------------------------------------------
+
+Question: Will Gavin Newsom win the 2028 US Presidential Election?
+Market ID: 561230
+Slug: will-gavin-newsom-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.185
+    - NO:  $0.815
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.247
+    - NO:  $0.306
+    - Sum: $0.553
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.491
+  Guaranteed Profit: $0.509
+  ROI: 103.67%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.185 on YES
+  2. On Application 2: Bet $0.306 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.509
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.491, Profit: $0.509, ROI: 103.67%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.062, Profit: $-0.062, ROI: -5.84%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #17
+----------------------------------------------------------------------------------------------------
+
+Question: Will Pete Buttigieg win the 2028 US Presidential Election?
+Market ID: 561232
+Slug: will-pete-buttigieg-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.025
+    - NO:  $0.976
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.496
+    - NO:  $0.472
+    - Sum: $0.968
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.496
+  Guaranteed Profit: $0.504
+  ROI: 101.41%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.025 on YES
+  2. On Application 2: Bet $0.472 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.504
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.496, Profit: $0.504, ROI: 101.41%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.472, Profit: $-0.472, ROI: -32.04%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #18
+----------------------------------------------------------------------------------------------------
+
+Question: Will the Chicago Bears win Super Bowl 2026?
+Market ID: 540211
+Slug: will-the-chicago-bears-win-super-bowl-2026
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.056
+    - NO:  $0.945
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.497
+    - NO:  $0.461
+    - Sum: $0.958
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.517
+  Guaranteed Profit: $0.483
+  ROI: 93.61%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.056 on YES
+  2. On Application 2: Bet $0.461 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.483
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.517, Profit: $0.483, ROI: 93.61%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.442, Profit: $-0.442, ROI: -30.63%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #19
+----------------------------------------------------------------------------------------------------
+
+Question: Will Vivek Ramaswamy win the 2028 US Presidential Election?
+Market ID: 561248
+Slug: will-vivek-ramaswamy-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.009
+    - NO:  $0.991
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.180
+    - NO:  $0.523
+    - Sum: $0.703
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.532
+  Guaranteed Profit: $0.468
+  ROI: 87.79%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.009 on YES
+  2. On Application 2: Bet $0.523 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.468
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.532, Profit: $0.468, ROI: 87.79%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.171, Profit: $-0.171, ROI: -14.57%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #20
+----------------------------------------------------------------------------------------------------
+
+Question: Will Nikki Haley win the 2028 US Presidential Election?
+Market ID: 561245
+Slug: will-nikki-haley-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.007
+    - NO:  $0.993
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.410
+    - NO:  $0.547
+    - Sum: $0.957
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.554
+  Guaranteed Profit: $0.446
+  ROI: 80.34%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.007 on YES
+  2. On Application 2: Bet $0.547 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.446
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.554, Profit: $0.446, ROI: 80.34%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.403, Profit: $-0.403, ROI: -28.70%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #21
+----------------------------------------------------------------------------------------------------
+
+Question: Will the Los Angeles Rams win Super Bowl 2026?
+Market ID: 540224
+Slug: will-the-los-angeles-rams-win-super-bowl-2026
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.200
+    - NO:  $0.800
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.468
+    - NO:  $0.372
+    - Sum: $0.840
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.572
+  Guaranteed Profit: $0.428
+  ROI: 74.98%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.200 on YES
+  2. On Application 2: Bet $0.372 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.428
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.572, Profit: $0.428, ROI: 74.98%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.268, Profit: $-0.268, ROI: -21.17%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #22
+----------------------------------------------------------------------------------------------------
+
+Question: Will Kim Kardashian win the 2028 US Presidential Election?
+Market ID: 561254
+Slug: will-kim-kardashian-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.009
+    - NO:  $0.992
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.393
+    - NO:  $0.578
+    - Sum: $0.971
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.586
+  Guaranteed Profit: $0.414
+  ROI: 70.50%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.009 on YES
+  2. On Application 2: Bet $0.578 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.414
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.586, Profit: $0.414, ROI: 70.50%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.385, Profit: $-0.385, ROI: -27.77%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #23
+----------------------------------------------------------------------------------------------------
+
+Question: Will Donald Trump win the 2028 US Presidential Election?
+Market ID: 561243
+Slug: will-donald-trump-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.026
+    - NO:  $0.974
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.429
+    - NO:  $0.577
+    - Sum: $1.006
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.603
+  Guaranteed Profit: $0.397
+  ROI: 65.70%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.026 on YES
+  2. On Application 2: Bet $0.577 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.397
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.603, Profit: $0.397, ROI: 65.70%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.403, Profit: $-0.403, ROI: -28.70%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #24
+----------------------------------------------------------------------------------------------------
+
+Question: Will Wes Moore win the 2028 US Presidential Election?
+Market ID: 561235
+Slug: will-wes-moore-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.013
+    - NO:  $0.988
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.612
+    - NO:  $0.599
+    - Sum: $1.211
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.611
+  Guaranteed Profit: $0.389
+  ROI: 63.53%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.013 on YES
+  2. On Application 2: Bet $0.599 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.389
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.611, Profit: $0.389, ROI: 63.53%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.599, Profit: $-0.599, ROI: -37.48%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #25
+----------------------------------------------------------------------------------------------------
+
+Question: Will the New England Patriots win Super Bowl 2026?
+Market ID: 540227
+Slug: will-the-new-england-patriots-win-super-bowl-2026
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.131
+    - NO:  $0.870
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.554
+    - NO:  $0.483
+    - Sum: $1.037
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.613
+  Guaranteed Profit: $0.387
+  ROI: 63.00%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.131 on YES
+  2. On Application 2: Bet $0.483 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.387
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.613, Profit: $0.387, ROI: 63.00%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.424, Profit: $-0.424, ROI: -29.75%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #26
+----------------------------------------------------------------------------------------------------
+
+Question: Will Ivanka Trump win the 2028 US Presidential Election?
+Market ID: 561255
+Slug: will-ivanka-trump-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.011
+    - NO:  $0.989
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.725
+    - NO:  $0.639
+    - Sum: $1.364
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.650
+  Guaranteed Profit: $0.350
+  ROI: 53.73%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.011 on YES
+  2. On Application 2: Bet $0.639 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.350
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.650, Profit: $0.350, ROI: 53.73%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.714, Profit: $-0.714, ROI: -41.64%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #27
+----------------------------------------------------------------------------------------------------
+
+Question: Will Marco Rubio win the 2028 US Presidential Election?
+Market ID: 561234
+Slug: will-marco-rubio-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.101
+    - NO:  $0.899
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.439
+    - NO:  $0.567
+    - Sum: $1.006
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.667
+  Guaranteed Profit: $0.333
+  ROI: 49.81%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.101 on YES
+  2. On Application 2: Bet $0.567 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.333
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.667, Profit: $0.333, ROI: 49.81%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.339, Profit: $-0.339, ROI: -25.29%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #28
+----------------------------------------------------------------------------------------------------
+
+Question: Will JB Pritzker win the 2028 US Presidential Election?
+Market ID: 561241
+Slug: will-jb-pritzker-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.022
+    - NO:  $0.978
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.316
+    - NO:  $0.655
+    - Sum: $0.971
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.677
+  Guaranteed Profit: $0.323
+  ROI: 47.60%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.022 on YES
+  2. On Application 2: Bet $0.655 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.323
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.677, Profit: $0.323, ROI: 47.60%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.294, Profit: $-0.294, ROI: -22.69%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #29
+----------------------------------------------------------------------------------------------------
+
+Question: Will Dwayne 'The Rock' Johnson win the 2028 US Presidential Election?
+Market ID: 561252
+Slug: will-dwayne-the-rock-johnson-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.015
+    - NO:  $0.986
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.326
+    - NO:  $0.682
+    - Sum: $1.008
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.697
+  Guaranteed Profit: $0.303
+  ROI: 43.58%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.015 on YES
+  2. On Application 2: Bet $0.682 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.303
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.697, Profit: $0.303, ROI: 43.58%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.312, Profit: $-0.312, ROI: -23.75%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #30
+----------------------------------------------------------------------------------------------------
+
+Question: Will the San Francisco 49ers win Super Bowl 2026?
+Market ID: 540233
+Slug: will-the-san-francisco-49ers-win-super-bowl-2026
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.048
+    - NO:  $0.953
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.380
+    - NO:  $0.659
+    - Sum: $1.039
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.707
+  Guaranteed Profit: $0.293
+  ROI: 41.54%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.048 on YES
+  2. On Application 2: Bet $0.659 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.293
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.707, Profit: $0.293, ROI: 41.54%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.333, Profit: $-0.333, ROI: -24.95%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #31
+----------------------------------------------------------------------------------------------------
+
+Question: Will Tucker Carlson win the 2028 US Presidential Election?
+Market ID: 561253
+Slug: will-tucker-carlson-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.011
+    - NO:  $0.990
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.258
+    - NO:  $0.712
+    - Sum: $0.970
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.722
+  Guaranteed Profit: $0.278
+  ROI: 38.41%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.011 on YES
+  2. On Application 2: Bet $0.712 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.278
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.722, Profit: $0.278, ROI: 38.41%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.248, Profit: $-0.248, ROI: -19.84%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #32
+----------------------------------------------------------------------------------------------------
+
+Question: Will Elon Musk win the 2028 US Presidential Election?
+Market ID: 561250
+Slug: will-elon-musk-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.009
+    - NO:  $0.991
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.235
+    - NO:  $0.744
+    - Sum: $0.979
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.753
+  Guaranteed Profit: $0.247
+  ROI: 32.71%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.009 on YES
+  2. On Application 2: Bet $0.744 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.247
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.753, Profit: $0.247, ROI: 32.71%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.226, Profit: $-0.226, ROI: -18.40%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #33
+----------------------------------------------------------------------------------------------------
+
+Question: Will Josh Shapiro win the 2028 US Presidential Election?
+Market ID: 561233
+Slug: will-josh-shapiro-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.033
+    - NO:  $0.968
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.383
+    - NO:  $0.774
+    - Sum: $1.157
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.806
+  Guaranteed Profit: $0.194
+  ROI: 23.99%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.033 on YES
+  2. On Application 2: Bet $0.774 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.194
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.806, Profit: $0.194, ROI: 23.99%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.351, Profit: $-0.351, ROI: -25.95%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #34
+----------------------------------------------------------------------------------------------------
+
+Question: Will Tulsi Gabbard win the 2028 US Presidential Election?
+Market ID: 561242
+Slug: will-tulsi-gabbard-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.007
+    - NO:  $0.993
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.101
+    - NO:  $0.851
+    - Sum: $0.952
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.858
+  Guaranteed Profit: $0.142
+  ROI: 16.48%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.007 on YES
+  2. On Application 2: Bet $0.851 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.142
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.858, Profit: $0.142, ROI: 16.48%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.094, Profit: $-0.094, ROI: -8.55%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #35
+----------------------------------------------------------------------------------------------------
+
+Question: Will Michelle Obama win the 2028 US Presidential Election?
+Market ID: 561257
+Slug: will-michelle-obama-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.007
+    - NO:  $0.993
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.110
+    - NO:  $0.859
+    - Sum: $0.969
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.866
+  Guaranteed Profit: $0.134
+  ROI: 15.41%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.007 on YES
+  2. On Application 2: Bet $0.859 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.134
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.866, Profit: $0.134, ROI: 15.41%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.103, Profit: $-0.103, ROI: -9.30%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #36
+----------------------------------------------------------------------------------------------------
+
+Question: Will the Buffalo Bills win Super Bowl 2026?
+Market ID: 540209
+Slug: will-the-buffalo-bills-win-super-bowl-2026
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.145
+    - NO:  $0.855
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.234
+    - NO:  $0.799
+    - Sum: $1.033
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.944
+  Guaranteed Profit: $0.056
+  ROI: 5.93%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.145 on YES
+  2. On Application 2: Bet $0.799 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.056
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.944, Profit: $0.056, ROI: 5.93%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.089, Profit: $-0.089, ROI: -8.17%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #37
+----------------------------------------------------------------------------------------------------
+
+Question: Will the Denver Broncos win Super Bowl 2026?
+Market ID: 540215
+Slug: will-the-denver-broncos-win-super-bowl-2026
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.101
+    - NO:  $0.899
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.820
+    - NO:  $0.872
+    - Sum: $1.692
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.973
+  Guaranteed Profit: $0.027
+  ROI: 2.83%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.101 on YES
+  2. On Application 2: Bet $0.872 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.027
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.973, Profit: $0.027, ROI: 2.83%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.720, Profit: $-0.720, ROI: -41.84%
+
+----------------------------------------------------------------------------------------------------
+OPPORTUNITY #38
+----------------------------------------------------------------------------------------------------
+
+Question: Will JD Vance win the 2028 US Presidential Election?
+Market ID: 561229
+Slug: will-jd-vance-win-the-2028-us-presidential-election
+
+PRICE COMPARISON:
+  Application 1 (JSON Data):
+    - YES: $0.265
+    - NO:  $0.735
+    - Sum: $1.000
+
+  Application 2 (API Data):
+    - YES: $0.274
+    - NO:  $0.727
+    - Sum: $1.001
+
+ARBITRAGE STRATEGY:
+  Strategy Type: Yes on App1, No on App2
+  Total Cost: $0.992
+  Guaranteed Profit: $0.008
+  ROI: 0.81%
+
+ACTION PLAN:
+  1. On Application 1: Bet $0.265 on YES
+  2. On Application 2: Bet $0.727 on NO
+  3. Payout: $1.00 (regardless of outcome)
+  4. Net Profit: $0.008
+
+ALTERNATIVE STRATEGIES:
+  Strategy A (Yes on App1, No on App2):
+    Cost: $0.992, Profit: $0.008, ROI: 0.81%
+  Strategy B (No on App1, Yes on App2):
+    Cost: $1.009, Profit: $-0.009, ROI: -0.89%
+
+====================================================================================================
+END OF REPORT
+====================================================================================================
