@@ -4,10 +4,21 @@ This script compares prices from two different prediction markets and identifies
 """
 
 import json
-import random
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Tuple
+from typing import List, Dict, Optional
+
+from dotenv import load_dotenv
+load_dotenv() 
+
+from predict_dot_fun import get_predict_dot_fun_data
+from report_generation import generate_excel_report
+
+BASE_DIR = Path(__file__).parent.parent
+REPORT_DIR = BASE_DIR / "results"
+POLYMARKET_DATA_PATH = BASE_DIR / "assets" / "polymarket_data.json"
+JSON_OUTPUT_PATH = REPORT_DIR / "arbitrage_report.json"
+EXCEL_OUTPUT_PATH = REPORT_DIR / "arbitrage_report.xlsx"
 
 
 def load_market_data(json_path: str) -> List[Dict]:
@@ -23,54 +34,49 @@ def extract_market_info(market_data: List[Dict]) -> List[Dict]:
 
     for item in market_data:
         if 'markets' in item:
+            category = {'slug': item['slug'], 'markets': []}
             for market in item['markets']:
                 market_info = {
                     'id': market.get('id'),
                     'question': market.get('question'),
+                    'title': market.get("groupItemTitle"),
                     'outcomes': json.loads(market.get('outcomes', '[]')),
                     'outcomePrices': [float(p) for p in json.loads(market.get('outcomePrices', '[]'))],
                     'slug': market.get('slug'),
+                    'conditionId': market.get('conditionId'),
                     'active': market.get('active', False),
                     'closed': market.get('closed', False)
                 }
-                extracted_markets.append(market_info)
+                category['markets'].append(market_info)
+
+            if category['markets']:
+                extracted_markets.append(category)
 
     return extracted_markets
 
 
-def mock_api_call(market_id: str, question: str) -> Dict:
-    """
-    Mock API call to get prices from another market application.
-    In a real scenario, this would make an actual HTTP request to another prediction market API.
+def get_predict_fun_price(market: Dict, predict_price_lookup: Dict[str, Dict]) -> Optional[Dict]:
+    """Validate and return predict.fun prices for the given Polymarket market."""
+    condition_id = market.get('conditionId')
+    if not condition_id:
+        return None
 
-    Returns a dict with 'yes' and 'no' prices that differ slightly from the original.
-    """
-    # Simulate varying prices from another market
-    # For demonstration, we'll generate prices that sometimes create arbitrage opportunities
+    lookup = predict_price_lookup.get(condition_id)
+    if not lookup:
+        return None
 
-    random.seed(int(market_id) if market_id else 0)  # Consistent random values for same market
+    yes_price = lookup.get('yes_price')
+    no_price = lookup.get('no_price')
 
-    # Generate prices that sum to approximately 1.0 but with some variation
-    base_yes_price = random.uniform(0.1, 0.9)
-
-    # Sometimes create arbitrage opportunities (prices don't sum to 1.0 accounting for fees)
-    if random.random() < 0.3:  # 30% chance of arbitrage opportunity
-        # Create inefficiency
-        base_no_price = random.uniform(0.1, 0.9)
-    else:
-        # Normal market (prices sum to ~1.0)
-        base_no_price = 1.0 - base_yes_price + random.uniform(-0.05, 0.05)
-
-    # Ensure prices are in valid range
-    yes_price = max(0.01, min(0.99, base_yes_price))
-    no_price = max(0.01, min(0.99, base_no_price))
+    if yes_price is None or no_price is None:
+        return None
 
     return {
-        'market_id': market_id,
-        'source': 'Application_2_API',
-        'yes_price': round(yes_price, 3),
-        'no_price': round(no_price, 3),
-        'timestamp': datetime.now().isoformat()
+        'market_id': lookup.get('market_id') or market.get('id'),
+        'source': lookup.get('source', 'predict.fun'),
+        'yes_price': float(yes_price),
+        'no_price': float(no_price),
+        'timestamp': lookup.get('timestamp') or datetime.utcnow().isoformat()
     }
 
 
@@ -150,7 +156,7 @@ def calculate_arbitrage(market1_prices: List[float], market2_prices: Dict) -> Di
     }
 
 
-def analyze_markets(markets: List[Dict]) -> List[Dict]:
+def analyze_markets(markets: List[Dict], predict_price_lookup: Dict[str, Dict]) -> List[Dict]:
     """Analyze all markets for arbitrage opportunities."""
     opportunities = []
 
@@ -159,8 +165,11 @@ def analyze_markets(markets: List[Dict]) -> List[Dict]:
         if market['closed'] or not market['outcomePrices']:
             continue
 
-        # Get prices from second market (mock API call)
-        market2_data = mock_api_call(market['id'], market['question'])
+        # Get prices from predict.fun lookup
+        market2_data = get_predict_fun_price(market, predict_price_lookup)
+
+        if not market2_data:
+            continue
 
         # Calculate arbitrage
         arbitrage_result = calculate_arbitrage(market['outcomePrices'], market2_data)
@@ -231,130 +240,59 @@ def generate_json_report(opportunities: List[Dict], output_path: str):
         json.dump(json_data, f, indent=2, ensure_ascii=False)
 
 
-def generate_report(opportunities: List[Dict], output_path: str):
-    """Generate a human-readable report of arbitrage opportunities."""
-
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write("=" * 100 + "\n")
-        f.write("ARBITRAGE OPPORTUNITIES REPORT\n")
-        f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write("=" * 100 + "\n\n")
-
-        if not opportunities:
-            f.write("No arbitrage opportunities found.\n")
-            return
-
-        f.write(f"Total Opportunities Found: {len(opportunities)}\n\n")
-
-        # Sort opportunities by ROI (best first)
-        sorted_opportunities = sorted(
-            opportunities,
-            key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0,
-            reverse=True
-        )
-
-        for idx, opp in enumerate(sorted_opportunities, 1):
-            market = opp['market']
-            arb = opp['arbitrage']
-            best = arb['best_strategy']
-
-            if not best:
-                continue
-
-            f.write("-" * 100 + "\n")
-            f.write(f"OPPORTUNITY #{idx}\n")
-            f.write("-" * 100 + "\n\n")
-
-            f.write(f"Question: {market['question']}\n")
-            f.write(f"Market ID: {market['id']}\n")
-            f.write(f"Slug: {market['slug']}\n\n")
-
-            f.write("PRICE COMPARISON:\n")
-            f.write(f"  Application 1 (JSON Data):\n")
-            f.write(f"    - YES: ${arb['market1_yes']:.3f}\n")
-            f.write(f"    - NO:  ${arb['market1_no']:.3f}\n")
-            f.write(f"    - Sum: ${arb['market1_yes'] + arb['market1_no']:.3f}\n\n")
-
-            f.write(f"  Application 2 (API Data):\n")
-            f.write(f"    - YES: ${arb['market2_yes']:.3f}\n")
-            f.write(f"    - NO:  ${arb['market2_no']:.3f}\n")
-            f.write(f"    - Sum: ${arb['market2_yes'] + arb['market2_no']:.3f}\n\n")
-
-            f.write("ARBITRAGE STRATEGY:\n")
-            f.write(f"  Strategy Type: {best['type']}\n")
-            f.write(f"  Total Cost: ${best['cost']:.3f}\n")
-            f.write(f"  Guaranteed Profit: ${best['profit']:.3f}\n")
-            f.write(f"  ROI: {best['roi_percent']:.2f}%\n\n")
-
-            f.write("ACTION PLAN:\n")
-            f.write(f"  1. On Application 1: {best['action_app1']}\n")
-            f.write(f"  2. On Application 2: {best['action_app2']}\n")
-            f.write(f"  3. Payout: $1.00 (regardless of outcome)\n")
-            f.write(f"  4. Net Profit: ${best['profit']:.3f}\n\n")
-
-            # Show both strategies for completeness
-            f.write("ALTERNATIVE STRATEGIES:\n")
-            f.write(f"  Strategy A ({arb['strategy1']['description']}):\n")
-            f.write(f"    Cost: ${arb['strategy1']['cost']:.3f}, ")
-            f.write(f"Profit: ${arb['strategy1']['profit']:.3f}, ")
-            f.write(f"ROI: {arb['strategy1']['roi_percent']:.2f}%\n")
-
-            f.write(f"  Strategy B ({arb['strategy2']['description']}):\n")
-            f.write(f"    Cost: ${arb['strategy2']['cost']:.3f}, ")
-            f.write(f"Profit: ${arb['strategy2']['profit']:.3f}, ")
-            f.write(f"ROI: {arb['strategy2']['roi_percent']:.2f}%\n\n")
-
-        f.write("=" * 100 + "\n")
-        f.write("END OF REPORT\n")
-        f.write("=" * 100 + "\n")
-
-
 def main():
     """Main execution function."""
     print("Market Arbitrage Analyzer")
     print("=" * 50)
 
-    # Define paths
-    base_dir = Path(__file__).parent
-    json_path = base_dir / "assets" / "data.json"
-    output_path = base_dir / "arbitrage_report.txt"
-    json_output_path = base_dir / "arbitrage_report.json"
-
     # Load data
-    print(f"\n1. Loading market data from: {json_path}")
+    print(f"\n1. Loading Polymarket data from: {POLYMARKET_DATA_PATH}")
     try:
-        market_data = load_market_data(json_path)
+        market_data = load_market_data(POLYMARKET_DATA_PATH)
         print(f"   ✓ Loaded {len(market_data)} market groups")
     except Exception as e:
         print(f"   ✗ Error loading data: {e}")
         return
 
     # Extract market information
-    print("\n2. Extracting market information...")
-    markets = extract_market_info(market_data)
-    print(f"   ✓ Extracted {len(markets)} individual markets")
+    print("\n2. Extracting Polymarket information...")
+    poly_cat_with_markets = extract_market_info(market_data)
+    print(f"   ✓ Extracted {len(poly_cat_with_markets)} Polymarket categories")
 
-    # Analyze for arbitrage opportunities
-    print("\n3. Analyzing markets for arbitrage opportunities...")
-    print("   (Comparing with mock API data from Application 2)")
-    opportunities = analyze_markets(markets)
-    print(f"   ✓ Found {len(opportunities)} arbitrage opportunities")
+    category_slugs = [cat['slug'] for cat in poly_cat_with_markets]
+    print("\n3. Fetching predict.fun prices...")
+    predict_price_lookup = get_predict_dot_fun_data(category_slugs)
+    print(f"   ✓ Retrieved prices for {len(predict_price_lookup)} predict.fun markets")
+
+    all_opportunities = []
+    total_markets = 0
+
+    print("\n4. Analyzing markets for arbitrage opportunities...")
+    for idx, polymarket_category in enumerate(poly_cat_with_markets, 1):
+        markets = polymarket_category.get('markets', [])
+        total_markets += len(markets)
+        print(f"   - Category {idx}/{len(poly_cat_with_markets)}: {polymarket_category['slug']} ({len(markets)} markets)")
+        category_opportunities = analyze_markets(markets, predict_price_lookup)
+        all_opportunities.extend(category_opportunities)
+
+    opportunities = all_opportunities
+    print(f"   ✓ Found {len(opportunities)} arbitrage opportunities across {total_markets} markets")
 
     # Generate report
-    print(f"\n4. Generating reports...")
-    print(f"   Text report: {output_path}")
-    generate_report(opportunities, output_path)
-    print(f"   ✓ Text report saved")
-
-    print(f"   JSON report: {json_output_path}")
-    generate_json_report(opportunities, json_output_path)
+    print(f"\n5. Generating reports...")
+    print(f"   JSON report: {JSON_OUTPUT_PATH}")
+    generate_json_report(opportunities, JSON_OUTPUT_PATH)
     print(f"   ✓ JSON report saved")
+
+    print(f"   Excel report: {EXCEL_OUTPUT_PATH}")
+    generate_excel_report(opportunities, EXCEL_OUTPUT_PATH)
+    print(f"   ✓ Excel report saved")
 
     # Summary
     print("\n" + "=" * 50)
     print("ANALYSIS COMPLETE")
     print("=" * 50)
-    print(f"Total markets analyzed: {len(markets)}")
+    print(f"Total markets analyzed: {total_markets}")
     print(f"Arbitrage opportunities found: {len(opportunities)}")
 
     if opportunities:
@@ -366,9 +304,8 @@ def main():
         print(f"Best ROI opportunity: {best_roi:.2f}%")
 
     print(f"\nReports saved:")
-    print(f"  - Text: {output_path}")
-    print(f"  - JSON: {json_output_path}")
-    print("\nNote: API data is mocked for demonstration purposes.")
+    print(f"  - JSON: {JSON_OUTPUT_PATH}")
+    print(f"  - Excel: {EXCEL_OUTPUT_PATH}")
 
 
 if __name__ == '__main__':

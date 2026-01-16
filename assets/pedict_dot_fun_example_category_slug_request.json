@@ -1,0 +1,221 @@
+{
+    "success": true,
+    "data": {
+        "id": 898,
+        "slug": "metamask-fdv-above-one-day-after-launch",
+        "title": "Metamask FDV above ___ one day after launch?",
+        "description": "This market will resolve to \"Yes\" if the Fully Diluted Valuation of Metamask's token is greater than the value specified in the title 1 day after launch. Otherwise, the market will resolve to \"No.\"\n\nThe token must be actively, publicly transferable and tradable to be considered a launch.\n\n\"1 day after launch\" is defined as 4:00 PM ET on the calendar day following launch. The resolution source for this market is the most liquid price source available. If Metamask doesn't launch a token by December 31, 2026, 11:59 PM ET, this market will resolve to \"No\".",
+        "imageUrl": "https://bnb-predict-fun.s3.us-west-2.amazonaws.com/metamask-fdv-above-one-day-after-launch",
+        "isNegRisk": false,
+        "isYieldBearing": false,
+        "marketVariant": "DEFAULT",
+        "createdAt": "2025-12-29T16:06:05.882Z",
+        "publishedAt": "2025-12-29T16:06:05.763Z",
+        "startsAt": "2025-12-29T16:06:05.763Z",
+        "endsAt": "2027-01-01T05:00:00.000Z",
+        "status": "OPEN",
+        "markets": [
+            {
+                "imageUrl": "https://bnb-predict-fun.s3.us-west-2.amazonaws.com/metamask-fdv-above-one-day-after-launch-700-m",
+                "title": "$700M",
+                "question": "Metamask FDV above $700M one day after launch?",
+                "description": "This market will resolve to \"Yes\" if the Fully Diluted Valuation of Metamask's token is greater than the value specified in the title 1 day after launch. Otherwise, the market will resolve to \"No.\"\n\nThe token must be actively, publicly transferable and tradable to be considered a launch.\n\n\"1 day after launch\" is defined as 4:00 PM ET on the calendar day following launch. The resolution source for this market is the most liquid price source available. If Metamask doesn't launch a token by December 31, 2026, 11:59 PM ET, this market will resolve to \"No\".",
+                "status": "REGISTERED",
+                "isNegRisk": false,
+                "isYieldBearing": false,
+                "resolution": null,
+                "oracleQuestionId": "0x827f78b314abe9e63beae2be7aae7b6d8da4b5ca068f7e8e2b520e639278902e",
+                "conditionId": "0xb141376cf196905292c1844321b840cb45a71d22742dd8d1a8901d4f47108a13",
+                "resolverAddress": "0x242E1Ba24f6fC524bfb410062Ca5689A9622613d",
+                "questionIndex": null,
+                "spreadThreshold": 0.06,
+                "shareThreshold": 100,
+                "polymarketConditionIds": [
+                    "0x1c842b91d226266fbe0e55d9bce9c52ce48b825d069e039c24d7fe57a5be6eaa"
+                ],
+                "kalshiMarketTicker": null,
+                "categorySlug": "metamask-fdv-above-one-day-after-launch",
+                "createdAt": "2025-12-29T16:06:23.006Z",
+                "decimalPrecision": 3,
+                "id": 881,
+                "feeRateBps": 200,
+                "outcomes": [
+                    {
+                        "name": "Yes",
+                        "indexSet": 1,
+                        "status": null,
+                        "onChainId": "109981187343204725615097256241642710525482459971788482249349145463324549029055"
+                    },
+                    {
+                        "name": "No",
+                        "indexSet": 2,
+                        "status": null,
+                        "onChainId": "67055156509168702200228346431842270998331489584238184815618454523756966501690"
+                    }
+                ]
+            },
+            {
+                "imageUrl": "https://bnb-predict-fun.s3.us-west-2.amazonaws.com/metamask-fdv-above-one-day-after-launch-1-b",
+                "title": "$1B",
+                "question": "Metamask FDV above $1B one day after launch?",
+                "description": "This market will resolve to \"Yes\" if the Fully Diluted Valuation of Metamask's token is greater than the value specified in the title 1 day after launch. Otherwise, the market will resolve to \"No.\"\n\nThe token must be actively, publicly transferable and tradable to be considered a launch.\n\n\"1 day after launch\" is defined as 4:00 PM ET on the calendar day following launch. The resolution source for this market is the most liquid price source available. If Metamask doesn't launch a token by December 31, 2026, 11:59 PM ET, this market will resolve to \"No\".",
+                "status": "REGISTERED",
+                "isNegRisk": false,
+                "isYieldBearing": false,
+                "resolution": null,
+                "oracleQuestionId": "0x6b17cce355a3f07fff3800ee08a2dfe8487290f3c67edb4cadf7ec2aac32f1c2",
+                "conditionId": "0x0b99f3a94ba82e7d58a58905d8da7a043a248698bb2dafe5a0af36a4de2825e9",
+                "resolverAddress": "0x242E1Ba24f6fC524bfb410062Ca5689A9622613d",
+                "questionIndex": null,
+                "spreadThreshold": 0.06,
+                "shareThreshold": 100,
+                "polymarketConditionIds": [
+                    "0xb0dafd2efe994270384d6265f1c62dbfe10880bba15dfda68974898617b5cee8"
+                ],
+                "kalshiMarketTicker": null,
+                "categorySlug": "metamask-fdv-above-one-day-after-launch",
+                "createdAt": "2025-12-29T16:06:33.015Z",
+                "decimalPrecision": 3,
+                "id": 882,
+                "feeRateBps": 200,
+                "outcomes": [
+                    {
+                        "name": "Yes",
+                        "indexSet": 1,
+                        "status": null,
+                        "onChainId": "42615687134559797334898562807650569079788650404778624262933294650180482312445"
+                    },
+                    {
+                        "name": "No",
+                        "indexSet": 2,
+                        "status": null,
+                        "onChainId": "77712670452547907482515162409863908378947201707930845753917863885753800889318"
+                    }
+                ]
+            },
+            {
+                "imageUrl": "https://bnb-predict-fun.s3.us-west-2.amazonaws.com/metamask-fdv-above-one-day-after-launch-3-b",
+                "title": "$3B",
+                "question": "Metamask FDV above $3B one day after launch?",
+                "description": "This market will resolve to \"Yes\" if the Fully Diluted Valuation of Metamask's token is greater than the value specified in the title 1 day after launch. Otherwise, the market will resolve to \"No.\"\n\nThe token must be actively, publicly transferable and tradable to be considered a launch.\n\n\"1 day after launch\" is defined as 4:00 PM ET on the calendar day following launch. The resolution source for this market is the most liquid price source available. If Metamask doesn't launch a token by December 31, 2026, 11:59 PM ET, this market will resolve to \"No\".",
+                "status": "REGISTERED",
+                "isNegRisk": false,
+                "isYieldBearing": false,
+                "resolution": null,
+                "oracleQuestionId": "0x43eb1e6f54b4e28530565d4ef3c0555bf314844b9a955be5802cde2039f7f7c6",
+                "conditionId": "0x8022d297e5e1e308863acb4acc7d972812401e217a3f4c9ef2f44e4381ae9bdd",
+                "resolverAddress": "0x242E1Ba24f6fC524bfb410062Ca5689A9622613d",
+                "questionIndex": null,
+                "spreadThreshold": 0.06,
+                "shareThreshold": 100,
+                "polymarketConditionIds": [
+                    "0xb326b78f905b8ff9a1764d42ef3c46bd61b78c9e32a53607ab7245a2da456291"
+                ],
+                "kalshiMarketTicker": null,
+                "categorySlug": "metamask-fdv-above-one-day-after-launch",
+                "createdAt": "2025-12-29T16:06:42.798Z",
+                "decimalPrecision": 3,
+                "id": 883,
+                "feeRateBps": 200,
+                "outcomes": [
+                    {
+                        "name": "Yes",
+                        "indexSet": 1,
+                        "status": null,
+                        "onChainId": "104726366259015718024222118441543328403892963266735530701470519211552974527963"
+                    },
+                    {
+                        "name": "No",
+                        "indexSet": 2,
+                        "status": null,
+                        "onChainId": "17732880091028292908083975017371340483089368458358457150620482893306889115992"
+                    }
+                ]
+            },
+            {
+                "imageUrl": "https://bnb-predict-fun.s3.us-west-2.amazonaws.com/metamask-fdv-above-one-day-after-launch-2-b",
+                "title": "$2B",
+                "question": "Metamask FDV above $2B one day after launch?",
+                "description": "This market will resolve to \"Yes\" if the Fully Diluted Valuation of Metamask's token is greater than the value specified in the title 1 day after launch. Otherwise, the market will resolve to \"No.\"\n\nThe token must be actively, publicly transferable and tradable to be considered a launch.\n\n\"1 day after launch\" is defined as 4:00 PM ET on the calendar day following launch. The resolution source for this market is the most liquid price source available. If Metamask doesn't launch a token by December 31, 2026, 11:59 PM ET, this market will resolve to \"No\".",
+                "status": "REGISTERED",
+                "isNegRisk": false,
+                "isYieldBearing": false,
+                "resolution": null,
+                "oracleQuestionId": "0xf6d50080ef829b43b817a9c22e3db257aa7208ca93be47215b0cff26f702726b",
+                "conditionId": "0x5c68468988d1d21da049aa46b2613ec12682c07f5e6a5d1145b8d8fc56c66d60",
+                "resolverAddress": "0x242E1Ba24f6fC524bfb410062Ca5689A9622613d",
+                "questionIndex": null,
+                "spreadThreshold": 0.06,
+                "shareThreshold": 100,
+                "polymarketConditionIds": [
+                    "0x77399fdf6c5097661705ee1fcf8ad615721ea5dd695871dcae2c9eb192a3d75b"
+                ],
+                "kalshiMarketTicker": null,
+                "categorySlug": "metamask-fdv-above-one-day-after-launch",
+                "createdAt": "2025-12-29T16:06:58.132Z",
+                "decimalPrecision": 3,
+                "id": 884,
+                "feeRateBps": 200,
+                "outcomes": [
+                    {
+                        "name": "Yes",
+                        "indexSet": 1,
+                        "status": null,
+                        "onChainId": "93503969126205739759692919005177207926757155982002616267110128587897089458764"
+                    },
+                    {
+                        "name": "No",
+                        "indexSet": 2,
+                        "status": null,
+                        "onChainId": "15948926749999309880254836506091742403223676302913400774212723361059869086763"
+                    }
+                ]
+            },
+            {
+                "imageUrl": "https://bnb-predict-fun.s3.us-west-2.amazonaws.com/metamask-fdv-above-one-day-after-launch-4-b",
+                "title": "$4B",
+                "question": "Metamask FDV above $4B one day after launch?",
+                "description": "This market will resolve to \"Yes\" if the Fully Diluted Valuation of Metamask's token is greater than the value specified in the title 1 day after launch. Otherwise, the market will resolve to \"No.\"\n\nThe token must be actively, publicly transferable and tradable to be considered a launch.\n\n\"1 day after launch\" is defined as 4:00 PM ET on the calendar day following launch. The resolution source for this market is the most liquid price source available. If Metamask doesn't launch a token by December 31, 2026, 11:59 PM ET, this market will resolve to \"No\".",
+                "status": "REGISTERED",
+                "isNegRisk": false,
+                "isYieldBearing": false,
+                "resolution": null,
+                "oracleQuestionId": "0x57c798c1c37a299cd4aaf86fe6c308babca8d2b3805633e78b041a2a991972d1",
+                "conditionId": "0x2d1e5e7c719035f6797ad936c84039cc8badb3922d3510812088d306c1219b93",
+                "resolverAddress": "0x242E1Ba24f6fC524bfb410062Ca5689A9622613d",
+                "questionIndex": null,
+                "spreadThreshold": 0.06,
+                "shareThreshold": 100,
+                "polymarketConditionIds": [
+                    "0xd450db2ea773df8f91797d594b15333d8e9ed2d74930ac0ffb54c123f78e3d0f"
+                ],
+                "kalshiMarketTicker": null,
+                "categorySlug": "metamask-fdv-above-one-day-after-launch",
+                "createdAt": "2025-12-29T16:07:08.340Z",
+                "decimalPrecision": 3,
+                "id": 885,
+                "feeRateBps": 200,
+                "outcomes": [
+                    {
+                        "name": "Yes",
+                        "indexSet": 1,
+                        "status": null,
+                        "onChainId": "19711352506371693024514834344560776638838350117916947540519553625271197070515"
+                    },
+                    {
+                        "name": "No",
+                        "indexSet": 2,
+                        "status": null,
+                        "onChainId": "59243984814748082530028789924250937885605981081488832245372303479894034924437"
+                    }
+                ]
+            }
+        ],
+        "tags": [
+            {
+                "name": "Crypto",
+                "id": "2"
+            }
+        ]
+    }
+}
