@@ -4,6 +4,7 @@ This script compares prices from two different prediction markets and identifies
 """
 
 import json
+import argparse
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional
@@ -13,12 +14,33 @@ load_dotenv()
 
 from predict_dot_fun import get_predict_dot_fun_data
 from report_generation import generate_excel_report
+from capital_allocator import allocate_capital, AllocationStrategy, validate_allocations
 
 BASE_DIR = Path(__file__).parent.parent
 REPORT_DIR = BASE_DIR / "results"
 POLYMARKET_DATA_PATH = BASE_DIR / "assets" / "polymarket_data.json"
 JSON_OUTPUT_PATH = REPORT_DIR / "arbitrage_report.json"
 EXCEL_OUTPUT_PATH = REPORT_DIR / "arbitrage_report.xlsx"
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description='Market Arbitrage Analyzer - Identify arbitrage opportunities and calculate capital allocation'
+    )
+    parser.add_argument(
+        '--capital',
+        type=float,
+        default=1500.0,
+        help='Total available capital for allocation (default: $1500)'
+    )
+    parser.add_argument(
+        '--allocation-strategy',
+        type=str,
+        choices=['equal', 'roi_weighted', 'kelly'],
+        default='equal',
+        help='Capital allocation strategy (default: equal)'
+    )
+    return parser.parse_args()
 
 
 def load_market_data(json_path: str) -> List[Dict]:
@@ -241,8 +263,12 @@ def generate_json_report(opportunities: List[Dict], output_path: str):
 
 
 def main():
-    """Main execution function."""
+    args = parse_arguments()
+
     print("Market Arbitrage Analyzer")
+    print("=" * 50)
+    print(f"Capital: ${args.capital:.2f}")
+    print(f"Allocation Strategy: {args.allocation_strategy}")
     print("=" * 50)
 
     # Load data
@@ -278,14 +304,39 @@ def main():
     opportunities = all_opportunities
     print(f"   ✓ Found {len(opportunities)} arbitrage opportunities across {total_markets} markets")
 
+    # Calculate capital allocation
+    allocation_result = None
+    if opportunities and args.capital > 0:
+        print(f"\n5. Calculating capital allocation...")
+        strategy_map = {
+            'equal': AllocationStrategy.EQUAL,
+            'roi_weighted': AllocationStrategy.ROI_WEIGHTED,
+            'kelly': AllocationStrategy.KELLY
+        }
+        strategy = strategy_map.get(args.allocation_strategy, AllocationStrategy.EQUAL)
+
+        allocation_result = allocate_capital(opportunities, args.capital, strategy)
+        print(f"   ✓ Allocated ${allocation_result['total_deployed']:.2f} across {allocation_result['num_opportunities']} opportunities")
+        print(f"   ✓ Expected total profit: ${allocation_result['total_expected_profit']:.2f}")
+        print(f"   ✓ Overall ROI: {allocation_result['overall_roi_percent']:.2f}%")
+
+        if allocation_result['total_unallocated'] > 0:
+            print(f"   ⚠ Unallocated capital: ${allocation_result['total_unallocated']:.2f}")
+
+        warnings = validate_allocations(allocation_result)
+        if warnings:
+            print("\n   Warnings:")
+            for warning in warnings:
+                print(f"   ⚠ {warning}")
+
     # Generate report
-    print(f"\n5. Generating reports...")
+    print(f"\n6. Generating reports...")
     print(f"   JSON report: {JSON_OUTPUT_PATH}")
     generate_json_report(opportunities, JSON_OUTPUT_PATH)
     print(f"   ✓ JSON report saved")
 
     print(f"   Excel report: {EXCEL_OUTPUT_PATH}")
-    generate_excel_report(opportunities, EXCEL_OUTPUT_PATH)
+    generate_excel_report(opportunities, EXCEL_OUTPUT_PATH, allocation_result)
     print(f"   ✓ Excel report saved")
 
     # Summary
@@ -302,6 +353,13 @@ def main():
         )
         best_roi = best_opp['arbitrage']['best_strategy']['roi_percent']
         print(f"Best ROI opportunity: {best_roi:.2f}%")
+
+    if allocation_result:
+        print(f"\nCapital Allocation Summary:")
+        print(f"  Total capital: ${allocation_result['total_capital']:.2f}")
+        print(f"  Deployed: ${allocation_result['total_deployed']:.2f}")
+        print(f"  Expected profit: ${allocation_result['total_expected_profit']:.2f}")
+        print(f"  Overall ROI: {allocation_result['overall_roi_percent']:.2f}%")
 
     print(f"\nReports saved:")
     print(f"  - JSON: {JSON_OUTPUT_PATH}")
