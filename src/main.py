@@ -3,8 +3,6 @@ Market Arbitrage Analyzer
 This script compares prices from two different prediction markets and identifies arbitrage opportunities.
 """
 
-import json
-import argparse
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional
@@ -13,79 +11,46 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 from predict_dot_fun import get_predict_dot_fun_data
+from opinion import get_opinion_data
 from report_generation import generate_excel_report
-from capital_allocator import allocate_capital, AllocationStrategy, validate_allocations
+from polymarket import fetch_polymarket_events, extract_market_info, fetch_polymarket_orderbooks, extract_orderbook_depth
 
 BASE_DIR = Path(__file__).parent.parent
 REPORT_DIR = BASE_DIR / "results"
-POLYMARKET_DATA_PATH = BASE_DIR / "assets" / "polymarket_data.json"
-JSON_OUTPUT_PATH = REPORT_DIR / "arbitrage_report.json"
 EXCEL_OUTPUT_PATH = REPORT_DIR / "arbitrage_report.xlsx"
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description='Market Arbitrage Analyzer - Identify arbitrage opportunities and calculate capital allocation'
-    )
-    parser.add_argument(
-        '--capital',
-        type=float,
-        default=1500.0,
-        help='Total available capital for allocation (default: $1500)'
-    )
-    parser.add_argument(
-        '--allocation-strategy',
-        type=str,
-        choices=['equal', 'roi_weighted', 'kelly'],
-        default='equal',
-        help='Capital allocation strategy (default: equal)'
-    )
-    return parser.parse_args()
-
-
-def load_market_data(json_path: str) -> List[Dict]:
-    """Load market data from JSON file."""
-    with open(json_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    return data
-
-
-def extract_market_info(market_data: List[Dict]) -> List[Dict]:
-    """Extract relevant information from markets array."""
-    extracted_markets = []
-
-    for item in market_data:
-        if 'markets' in item:
-            category = {'slug': item['slug'], 'markets': []}
-            for market in item['markets']:
-                market_info = {
-                    'id': market.get('id'),
-                    'question': market.get('question'),
-                    'title': market.get("groupItemTitle"),
-                    'outcomes': json.loads(market.get('outcomes', '[]')),
-                    'outcomePrices': [float(p) for p in json.loads(market.get('outcomePrices', '[]'))],
-                    'slug': market.get('slug'),
-                    'conditionId': market.get('conditionId'),
-                    'active': market.get('active', False),
-                    'closed': market.get('closed', False)
-                }
-                category['markets'].append(market_info)
-
-            if category['markets']:
-                extracted_markets.append(category)
-
-    return extracted_markets
-
-
-def get_predict_fun_price(market: Dict, predict_price_lookup: Dict[str, Dict]) -> Optional[Dict]:
-    """Validate and return predict.fun prices for the given Polymarket market."""
-    condition_id = market.get('conditionId')
-    if not condition_id:
-        return None
-
-    lookup = predict_price_lookup.get(condition_id)
-    if not lookup:
-        return None
+def get_price_from_lookup(market: Dict, price_lookup: Dict[str, Dict], match_by_slug: bool = False) -> Optional[Dict]:
+    """Validate and return prices for the given Polymarket market from any price lookup."""
+    
+    if match_by_slug:
+        # For Opinion.trade: match by category_slug + title since condition IDs differ
+        category_slug = market.get('category_slug', '')
+        market_title = market.get('title', '')
+        
+        # Try exact match first
+        market_key = f"{category_slug}||{market_title}"
+        lookup = price_lookup.get(market_key)
+        
+        if not lookup:
+            # Try fuzzy matching by searching for markets with same slug and title
+            for key, value in price_lookup.items():
+                stored_slug, stored_title = key.split('||', 1)
+                if stored_slug == category_slug and stored_title == market_title:
+                    lookup = value
+                    break
+        
+        if not lookup:
+            return None
+    else:
+        # For predict.fun: match by condition ID
+        condition_id = market.get('conditionId')
+        if not condition_id:
+            return None
+        
+        lookup = price_lookup.get(condition_id)
+        if not lookup:
+            return None
 
     yes_price = lookup.get('yes_price')
     no_price = lookup.get('no_price')
@@ -138,22 +103,26 @@ def calculate_arbitrage(market1_prices: List[float], market2_prices: Dict) -> Di
 
     best_strategy = None
     if profit_strategy1 > profit_strategy2 and profit_strategy1 > 0:
+        shares_yes = 1.0 / yes_price_m1 if yes_price_m1 > 0 else 0
+        shares_no = 1.0 / no_price_m2 if no_price_m2 > 0 else 0
         best_strategy = {
             'type': 'Yes on App1, No on App2',
             'cost': cost_strategy1,
             'profit': profit_strategy1,
             'roi_percent': roi_strategy1,
-            'action_app1': f"Bet ${yes_price_m1:.3f} on YES",
-            'action_app2': f"Bet ${no_price_m2:.3f} on NO"
+            'action_app1': f"Buy {shares_yes:.2f} shares of YES @ ${yes_price_m1:.3f}",
+            'action_app2': f"Buy {shares_no:.2f} shares of NO @ ${no_price_m2:.3f}"
         }
     elif profit_strategy2 > 0:
+        shares_no = 1.0 / no_price_m1 if no_price_m1 > 0 else 0
+        shares_yes = 1.0 / yes_price_m2 if yes_price_m2 > 0 else 0
         best_strategy = {
             'type': 'No on App1, Yes on App2',
             'cost': cost_strategy2,
             'profit': profit_strategy2,
             'roi_percent': roi_strategy2,
-            'action_app1': f"Bet ${no_price_m1:.3f} on NO",
-            'action_app2': f"Bet ${yes_price_m2:.3f} on YES"
+            'action_app1': f"Buy {shares_no:.2f} shares of NO @ ${no_price_m1:.3f}",
+            'action_app2': f"Buy {shares_yes:.2f} shares of YES @ ${yes_price_m2:.3f}"
         }
 
     return {
@@ -162,23 +131,65 @@ def calculate_arbitrage(market1_prices: List[float], market2_prices: Dict) -> Di
         'market1_no': no_price_m1,
         'market2_yes': yes_price_m2,
         'market2_no': no_price_m2,
-        'strategy1': {
-            'description': 'Yes on App1, No on App2',
-            'cost': cost_strategy1,
-            'profit': profit_strategy1,
-            'roi_percent': roi_strategy1
-        },
-        'strategy2': {
-            'description': 'No on App1, Yes on App2',
-            'cost': cost_strategy2,
-            'profit': profit_strategy2,
-            'roi_percent': roi_strategy2
-        },
         'best_strategy': best_strategy
     }
 
 
-def analyze_markets(markets: List[Dict], predict_price_lookup: Dict[str, Dict]) -> List[Dict]:
+def find_opinion_predict_matches(opinion_price_lookup: Dict[str, Dict], predict_price_lookup: Dict[str, Dict], polymarket_markets: List[Dict]) -> List[Dict]:
+    """
+    Match Opinion markets with predict.fun markets using Polymarket data as intermediary.
+    For each Polymarket market, check if it exists in both Opinion and predict.fun.
+    Returns list of match pairs with price data from both platforms.
+    """
+    matches = []
+    
+    # Build lookup for predict.fun by conditionId
+    predict_by_condition_id = {}
+    for condition_id, predict_data in predict_price_lookup.items():
+        predict_by_condition_id[condition_id] = predict_data
+    
+    # Build lookup for Opinion by slug||title
+    opinion_by_slug_title = {}
+    for opinion_key, opinion_data in opinion_price_lookup.items():
+        opinion_by_slug_title[opinion_key] = opinion_data
+    
+    # Go through each Polymarket category and its markets
+    for category in polymarket_markets:
+        category_slug = category['slug']
+        for market in category.get('markets', []):
+            if market.get('closed'):
+                continue
+            
+            condition_id = market.get('conditionId')
+            market_title = market.get('title')
+            
+            if not condition_id or not market_title:
+                continue
+            
+            # Check if this market exists in predict.fun
+            predict_data = predict_by_condition_id.get(condition_id)
+            if not predict_data:
+                continue
+            
+            # Check if this market exists in Opinion
+            opinion_key = f"{category_slug}||{market_title}"
+            opinion_data = opinion_by_slug_title.get(opinion_key)
+            if not opinion_data:
+                continue
+            
+            # Both exist - create match
+            matches.append({
+                'opinion': opinion_data,
+                'predict': predict_data,
+                'polymarket_slug': category_slug,
+                'market_title': market_title,
+                'market_question': market.get('question')
+            })
+    
+    return matches
+
+
+def analyze_markets(markets: List[Dict], price_lookup: Dict[str, Dict], match_by_slug: bool = False) -> List[Dict]:
     """Analyze all markets for arbitrage opportunities."""
     opportunities = []
 
@@ -187,8 +198,8 @@ def analyze_markets(markets: List[Dict], predict_price_lookup: Dict[str, Dict]) 
         if market['closed'] or not market['outcomePrices']:
             continue
 
-        # Get prices from predict.fun lookup
-        market2_data = get_predict_fun_price(market, predict_price_lookup)
+        # Get prices from lookup
+        market2_data = get_price_from_lookup(market, price_lookup, match_by_slug)
 
         if not market2_data:
             continue
@@ -206,78 +217,30 @@ def analyze_markets(markets: List[Dict], predict_price_lookup: Dict[str, Dict]) 
     return opportunities
 
 
-def generate_json_report(opportunities: List[Dict], output_path: str):
-    """Generate a concise JSON report of arbitrage opportunities."""
-
-    # Sort opportunities by ROI (best first)
-    sorted_opportunities = sorted(
-        opportunities,
-        key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0,
-        reverse=True
-    )
-
-    json_data = {
-        'generated_at': datetime.now().isoformat(),
-        'total_opportunities': len(opportunities),
-        'opportunities': []
-    }
-
-    for opp in sorted_opportunities:
-        market = opp['market']
-        arb = opp['arbitrage']
-        best = arb['best_strategy']
-
-        if not best:
-            continue
-
-        opportunity = {
-            'market_id': market['id'],
-            'question': market['question'],
-            'slug': market['slug'],
-            'prices': {
-                'app1': {
-                    'yes': arb['market1_yes'],
-                    'no': arb['market1_no']
-                },
-                'app2': {
-                    'yes': arb['market2_yes'],
-                    'no': arb['market2_no']
-                }
-            },
-            'best_strategy': {
-                'type': best['type'],
-                'total_cost': round(best['cost'], 3),
-                'profit': round(best['profit'], 3),
-                'roi_percent': round(best['roi_percent'], 2),
-                'actions': {
-                    'app1': best['action_app1'],
-                    'app2': best['action_app2']
-                }
-            }
-        }
-
-        json_data['opportunities'].append(opportunity)
-
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(json_data, f, indent=2, ensure_ascii=False)
-
-
 def main():
-    args = parse_arguments()
+    # Check if Excel file is open
+    if EXCEL_OUTPUT_PATH.exists():
+        try:
+            with open(EXCEL_OUTPUT_PATH, 'r+b') as f:
+                pass
+        except PermissionError:
+            print("\n" + "=" * 50)
+            print("ERROR: Excel file is currently open!")
+            print("=" * 50)
+            print(f"Please close the file: {EXCEL_OUTPUT_PATH}")
+            print("Then run the script again.")
+            return
 
     print("Market Arbitrage Analyzer")
     print("=" * 50)
-    print(f"Capital: ${args.capital:.2f}")
-    print(f"Allocation Strategy: {args.allocation_strategy}")
-    print("=" * 50)
 
-    # Load data
-    print(f"\n1. Loading Polymarket data from: {POLYMARKET_DATA_PATH}")
+    # Fetch Polymarket data via API
+    print(f"\n1. Fetching Polymarket data via API...")
     try:
-        market_data = load_market_data(POLYMARKET_DATA_PATH)
-        print(f"   ✓ Loaded {len(market_data)} market groups")
+        market_data = fetch_polymarket_events()
+        print(f"   ✓ Fetched {len(market_data)} market events")
     except Exception as e:
-        print(f"   ✗ Error loading data: {e}")
+        print(f"   ✗ Error fetching data: {e}")
         return
 
     # Extract market information
@@ -286,14 +249,21 @@ def main():
     print(f"   ✓ Extracted {len(poly_cat_with_markets)} Polymarket categories")
 
     category_slugs = [cat['slug'] for cat in poly_cat_with_markets]
+    
     print("\n3. Fetching predict.fun prices...")
     predict_price_lookup = get_predict_dot_fun_data(category_slugs)
     print(f"   ✓ Retrieved prices for {len(predict_price_lookup)} predict.fun markets")
 
+    print("\n4. Loading Opinion.trade data...")
+    opinion_price_lookup = get_opinion_data()
+    print(f"   ✓ Retrieved data for {len(opinion_price_lookup)} Opinion.trade markets")
+
     all_opportunities = []
+    all_opinion_opportunities = []
     total_markets = 0
 
-    print("\n4. Analyzing markets for arbitrage opportunities...")
+    print("\n5. Analyzing markets for arbitrage opportunities...")
+    print("\n   Polymarket vs predict.fun:")
     for idx, polymarket_category in enumerate(poly_cat_with_markets, 1):
         markets = polymarket_category.get('markets', [])
         total_markets += len(markets)
@@ -302,41 +272,147 @@ def main():
         all_opportunities.extend(category_opportunities)
 
     opportunities = all_opportunities
-    print(f"   ✓ Found {len(opportunities)} arbitrage opportunities across {total_markets} markets")
+    print(f"   ✓ Found {len(opportunities)} predict.fun arbitrage opportunities across {total_markets} markets")
 
-    # Calculate capital allocation
-    allocation_result = None
-    if opportunities and args.capital > 0:
-        print(f"\n5. Calculating capital allocation...")
-        strategy_map = {
-            'equal': AllocationStrategy.EQUAL,
-            'roi_weighted': AllocationStrategy.ROI_WEIGHTED,
-            'kelly': AllocationStrategy.KELLY
-        }
-        strategy = strategy_map.get(args.allocation_strategy, AllocationStrategy.EQUAL)
+    print("\n   Polymarket vs Opinion.trade:")
+    opinion_total_markets = 0
+    for idx, polymarket_category in enumerate(poly_cat_with_markets, 1):
+        markets = polymarket_category.get('markets', [])
+        opinion_total_markets += len(markets)
+        
+        # Add category slug to each market for Opinion matching
+        category_slug = polymarket_category['slug']
+        for market in markets:
+            market['category_slug'] = category_slug
+        
+        print(f"   - Category {idx}/{len(poly_cat_with_markets)}: {category_slug} ({len(markets)} markets)")
+        category_opportunities = analyze_markets(markets, opinion_price_lookup, match_by_slug=True)
+        all_opinion_opportunities.extend(category_opportunities)
 
-        allocation_result = allocate_capital(opportunities, args.capital, strategy)
-        print(f"   ✓ Allocated ${allocation_result['total_deployed']:.2f} across {allocation_result['num_opportunities']} opportunities")
-        print(f"   ✓ Expected total profit: ${allocation_result['total_expected_profit']:.2f}")
-        print(f"   ✓ Overall ROI: {allocation_result['overall_roi_percent']:.2f}%")
+    opinion_opportunities = all_opinion_opportunities
+    print(f"   ✓ Found {len(opinion_opportunities)} Opinion.trade arbitrage opportunities across {opinion_total_markets} markets")
 
-        if allocation_result['total_unallocated'] > 0:
-            print(f"   ⚠ Unallocated capital: ${allocation_result['total_unallocated']:.2f}")
+    print("\n   Opinion.trade vs predict.fun:")
+    matched_pairs = find_opinion_predict_matches(opinion_price_lookup, predict_price_lookup, poly_cat_with_markets)
+    print(f"   - Found {len(matched_pairs)} matched markets")
+    
+    opinion_vs_predict_opportunities = []
+    for match in matched_pairs:
+        opinion_data = match['opinion']
+        predict_data = match['predict']
+        
+        # Calculate arbitrage with Opinion as market1 and predict.fun as market2
+        opinion_prices = [opinion_data['yes_price'], opinion_data['no_price']]
+        arbitrage_result = calculate_arbitrage(opinion_prices, predict_data)
+        
+        if arbitrage_result and arbitrage_result['arbitrage_exists']:
+            opinion_vs_predict_opportunities.append({
+                'market': {
+                    'id': f"{match['polymarket_slug']}||{match['market_title']}",
+                    'question': f"{match['polymarket_slug']} - {match['market_title']}",
+                    'title': match['market_title'],
+                    'outcomePrices': opinion_prices,
+                    'closed': False
+                },
+                'market2_data': predict_data,
+                'arbitrage': arbitrage_result
+            })
+    
+    print(f"   ✓ Found {len(opinion_vs_predict_opportunities)} Opinion vs predict.fun arbitrage opportunities")
 
-        warnings = validate_allocations(allocation_result)
-        if warnings:
-            print("\n   Warnings:")
-            for warning in warnings:
-                print(f"   ⚠ {warning}")
+    # Fetch orderbooks for top 5 ROI opportunities
+    print(f"\n6. Fetching Polymarket orderbooks for top 5 ROI opportunities...")
+    
+    # Sort and get top 5 from Polymarket vs predict.fun
+    top5_polymarket_predict = sorted(
+        opportunities,
+        key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0,
+        reverse=True
+    )[:5]
+    
+    # Sort and get top 5 from Polymarket vs Opinion
+    top5_polymarket_opinion = sorted(
+        opinion_opportunities,
+        key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0,
+        reverse=True
+    )[:5]
+    
+    # Collect all unique token IDs needed
+    token_ids_to_fetch = set()
+    for opp in top5_polymarket_predict + top5_polymarket_opinion:
+        clob_tokens = opp['market'].get('clobTokenIds', [])
+        token_ids_to_fetch.update(clob_tokens)
+    
+    # Fetch all orderbooks in one call
+    orderbook_lookup = {}
+    if token_ids_to_fetch:
+        orderbook_lookup = fetch_polymarket_orderbooks(list(token_ids_to_fetch))
+        print(f"   ✓ Fetched {len(orderbook_lookup)} orderbooks")
+    
+    # Attach orderbook data to opportunities
+    for opp in top5_polymarket_predict:
+        clob_tokens = opp['market'].get('clobTokenIds', [])
+        if clob_tokens and len(clob_tokens) >= 2:
+            yes_price = opp['market']['outcomePrices'][0]
+            no_price = opp['market']['outcomePrices'][1]
+            
+            orderbook_data = {}
+            
+            # Get YES token orderbook
+            yes_token_id = clob_tokens[0]
+            if yes_token_id in orderbook_lookup:
+                yes_orderbook = orderbook_lookup[yes_token_id]
+                yes_depth = extract_orderbook_depth(yes_orderbook, yes_price)
+                if yes_depth:
+                    # Prefix with 'yes_'
+                    orderbook_data.update({f'yes_{k}': v for k, v in yes_depth.items()})
+            
+            # Get NO token orderbook
+            no_token_id = clob_tokens[1]
+            if no_token_id in orderbook_lookup:
+                no_orderbook = orderbook_lookup[no_token_id]
+                no_depth = extract_orderbook_depth(no_orderbook, no_price)
+                if no_depth:
+                    # Prefix with 'no_'
+                    orderbook_data.update({f'no_{k}': v for k, v in no_depth.items()})
+            
+            if orderbook_data:
+                opp['polymarket_orderbook'] = orderbook_data
+    
+    for opp in top5_polymarket_opinion:
+        clob_tokens = opp['market'].get('clobTokenIds', [])
+        if clob_tokens and len(clob_tokens) >= 2:
+            yes_price = opp['market']['outcomePrices'][0]
+            no_price = opp['market']['outcomePrices'][1]
+            
+            orderbook_data = {}
+            
+            yes_token_id = clob_tokens[0]
+            if yes_token_id in orderbook_lookup:
+                yes_orderbook = orderbook_lookup[yes_token_id]
+                yes_depth = extract_orderbook_depth(yes_orderbook, yes_price)
+                if yes_depth:
+                    orderbook_data.update({f'yes_{k}': v for k, v in yes_depth.items()})
+            
+            no_token_id = clob_tokens[1]
+            if no_token_id in orderbook_lookup:
+                no_orderbook = orderbook_lookup[no_token_id]
+                no_depth = extract_orderbook_depth(no_orderbook, no_price)
+                if no_depth:
+                    orderbook_data.update({f'no_{k}': v for k, v in no_depth.items()})
+            
+            if orderbook_data:
+                opp['polymarket_orderbook'] = orderbook_data
 
     # Generate report
-    print(f"\n6. Generating reports...")
-    print(f"   JSON report: {JSON_OUTPUT_PATH}")
-    generate_json_report(opportunities, JSON_OUTPUT_PATH)
-    print(f"   ✓ JSON report saved")
-
+    print(f"\n7. Generating Excel report...")
     print(f"   Excel report: {EXCEL_OUTPUT_PATH}")
-    generate_excel_report(opportunities, EXCEL_OUTPUT_PATH, allocation_result)
+    generate_excel_report(
+        opportunities, 
+        EXCEL_OUTPUT_PATH, 
+        opinion_opportunities,
+        opinion_vs_predict_opportunities
+    )
     print(f"   ✓ Excel report saved")
 
     # Summary
@@ -344,7 +420,7 @@ def main():
     print("ANALYSIS COMPLETE")
     print("=" * 50)
     print(f"Total markets analyzed: {total_markets}")
-    print(f"Arbitrage opportunities found: {len(opportunities)}")
+    print(f"\nPredict.fun arbitrage opportunities: {len(opportunities)}")
 
     if opportunities:
         best_opp = max(
@@ -352,17 +428,29 @@ def main():
             key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0
         )
         best_roi = best_opp['arbitrage']['best_strategy']['roi_percent']
-        print(f"Best ROI opportunity: {best_roi:.2f}%")
+        print(f"  Best ROI: {best_roi:.2f}%")
 
-    if allocation_result:
-        print(f"\nCapital Allocation Summary:")
-        print(f"  Total capital: ${allocation_result['total_capital']:.2f}")
-        print(f"  Deployed: ${allocation_result['total_deployed']:.2f}")
-        print(f"  Expected profit: ${allocation_result['total_expected_profit']:.2f}")
-        print(f"  Overall ROI: {allocation_result['overall_roi_percent']:.2f}%")
+    print(f"\nOpinion.trade arbitrage opportunities: {len(opinion_opportunities)}")
 
-    print(f"\nReports saved:")
-    print(f"  - JSON: {JSON_OUTPUT_PATH}")
+    if opinion_opportunities:
+        best_opp_opinion = max(
+            opinion_opportunities,
+            key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0
+        )
+        best_roi_opinion = best_opp_opinion['arbitrage']['best_strategy']['roi_percent']
+        print(f"  Best ROI: {best_roi_opinion:.2f}%")
+
+    print(f"\nOpinion vs predict.fun arbitrage opportunities: {len(opinion_vs_predict_opportunities)}")
+
+    if opinion_vs_predict_opportunities:
+        best_opp_opinion_predict = max(
+            opinion_vs_predict_opportunities,
+            key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0
+        )
+        best_roi_opinion_predict = best_opp_opinion_predict['arbitrage']['best_strategy']['roi_percent']
+        print(f"  Best ROI: {best_roi_opinion_predict:.2f}%")
+
+    print(f"\nReport saved:")
     print(f"  - Excel: {EXCEL_OUTPUT_PATH}")
 
 

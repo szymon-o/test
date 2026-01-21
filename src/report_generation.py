@@ -3,449 +3,309 @@ from typing import List, Dict, Optional
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.worksheet import Worksheet
 
 
-def generate_excel_report(opportunities: List[Dict], output_path: str, allocation_result: Optional[Dict] = None):
-    # Sort opportunities by ROI (best first)
-    sorted_opportunities = sorted(
-        opportunities,
-        key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0,
-        reverse=True
-    )
+class ExcelStyles:
+    def __init__(self):
+        self.header_font = Font(bold=True, color="FFFFFF", size=12)
+        self.header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+        self.header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        self.border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        self.center_alignment = Alignment(horizontal="center", vertical="center")
+        self.left_alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        self.currency_alignment = Alignment(horizontal="right", vertical="center")
+        self.action_highlight = PatternFill(start_color="D4EDDA", end_color="D4EDDA", fill_type="solid")
+        self.price_highlight = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
 
-    # Create allocation lookup if available
-    allocation_lookup = {}
-    if allocation_result and allocation_result.get('allocations'):
-        for allocation in allocation_result['allocations']:
-            market_id = allocation['opportunity']['market']['id']
-            allocation_lookup[market_id] = allocation
 
-    # Create workbook and worksheet
+class SheetBuilder:
+    CAPITAL_PER_OPPORTUNITY = 1500.0
+    
+    def __init__(self, worksheet: Worksheet, styles: ExcelStyles):
+        self.ws = worksheet
+        self.styles = styles
+    
+    def _sort_opportunities(self, opportunities: List[Dict]) -> List[Dict]:
+        return sorted(
+            opportunities,
+            key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0,
+            reverse=True
+        )
+    
+    def _build_headers(self, platform1_name: str, platform2_name: str, include_orderbook: bool = False) -> List[str]:
+        headers = [
+            "Rank",
+            "Question",
+            "ROI %",
+            "Bet YES on",
+            "Bet NO on",
+            f"{platform1_name} YES",
+            f"{platform1_name} NO",
+            f"{platform2_name} YES",
+            f"{platform2_name} NO",
+            f"Shares {platform1_name}",
+            f"Shares {platform2_name}",
+        ]
+        
+        if include_orderbook and platform1_name == "Polymarket":
+            headers.extend([
+                "YES Bid 1",
+                "YES Bid 1 Size $",
+                "YES Bid 2",
+                "YES Bid 2 Size $",
+                "YES Ask 1",
+                "YES Ask 1 Size $",
+                "YES Ask 2",
+                "YES Ask 2 Size $",
+                "NO Bid 1",
+                "NO Bid 1 Size $",
+                "NO Bid 2",
+                "NO Bid 2 Size $",
+                "NO Ask 1",
+                "NO Ask 1 Size $",
+                "NO Ask 2",
+                "NO Ask 2 Size $",
+            ])
+        
+        return headers
+    
+    def _write_headers(self, headers: List[str]):
+        for col_num, header in enumerate(headers, 1):
+            cell = self.ws.cell(row=1, column=col_num)
+            cell.value = header
+            cell.font = self.styles.header_font
+            cell.fill = self.styles.header_fill
+            cell.alignment = self.styles.header_alignment
+            cell.border = self.styles.border
+    
+    def _calculate_shares(self, arb: Dict, best_strategy: Dict) -> tuple:
+        strategy_type = best_strategy['type']
+        
+        if 'Yes on App1, No on App2' in strategy_type:
+            price_app1 = arb['market1_yes']
+            price_app2 = arb['market2_no']
+        else:
+            price_app1 = arb['market1_no']
+            price_app2 = arb['market2_yes']
+        
+        total_cost = price_app1 + price_app2
+        
+        bet_app1 = self.CAPITAL_PER_OPPORTUNITY * (price_app1 / total_cost) if total_cost > 0 else 0
+        bet_app2 = self.CAPITAL_PER_OPPORTUNITY * (price_app2 / total_cost) if total_cost > 0 else 0
+        
+        shares_app1 = bet_app1 / price_app1 if price_app1 > 0 else 0
+        shares_app2 = bet_app2 / price_app2 if price_app2 > 0 else 0
+        
+        return shares_app1, shares_app2
+    
+    def _write_cell(self, row: int, col: int, value, alignment, number_format: str = None, fill=None):
+        cell = self.ws.cell(row=row, column=col, value=value)
+        cell.alignment = alignment
+        cell.border = self.styles.border
+        if number_format:
+            cell.number_format = number_format
+        if fill:
+            cell.fill = fill
+    
+    def _write_basic_columns(self, row: int, idx: int, market: Dict, best: Dict, arb: Dict):
+        self._write_cell(row, 1, idx, self.styles.center_alignment)
+        self._write_cell(row, 2, market['question'], self.styles.left_alignment)
+        self._write_cell(row, 3, round(best['roi_percent'], 2), self.styles.center_alignment, '0.00"%"')
+    
+    def _write_price_columns(self, row: int, arb: Dict, best_strategy: Dict, platform1_name: str, platform2_name: str):
+        strategy_type = best_strategy['type']
+        
+        # Determine which prices to highlight based on strategy
+        if 'Yes on App1, No on App2' in strategy_type:
+            # Highlight Platform1 YES and Platform2 NO
+            self._write_cell(row, 6, round(arb['market1_yes'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
+            self._write_cell(row, 7, round(arb['market1_no'], 3), self.styles.currency_alignment, '$0.000')
+            self._write_cell(row, 8, round(arb['market2_yes'], 3), self.styles.currency_alignment, '$0.000')
+            self._write_cell(row, 9, round(arb['market2_no'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
+        else:
+            # Highlight Platform1 NO and Platform2 YES
+            self._write_cell(row, 6, round(arb['market1_yes'], 3), self.styles.currency_alignment, '$0.000')
+            self._write_cell(row, 7, round(arb['market1_no'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
+            self._write_cell(row, 8, round(arb['market2_yes'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
+            self._write_cell(row, 9, round(arb['market2_no'], 3), self.styles.currency_alignment, '$0.000')
+    
+    def _write_shares_columns(self, row: int, shares_app1: float, shares_app2: float):
+        self._write_cell(row, 10, round(shares_app1, 2), self.styles.center_alignment, '0.00')
+        self._write_cell(row, 11, round(shares_app2, 2), self.styles.center_alignment, '0.00')
+    
+    def _write_orderbook_columns(self, row: int, orderbook_data: Dict, best_strategy: Dict):
+        if not orderbook_data:
+            return
+        
+        strategy_type = best_strategy.get('type', '')
+        highlight_yes = 'Yes on App1' in strategy_type
+        highlight_no = 'No on App1' in strategy_type
+        
+        col = 12
+        orderbook_fields = [
+            ('yes_bid1_price', '$0.000', False),
+            ('yes_bid1_size_usd', '$0.00', highlight_yes),
+            ('yes_bid2_price', '$0.000', False),
+            ('yes_bid2_size_usd', '$0.00', False),
+            ('yes_ask1_price', '$0.000', False),
+            ('yes_ask1_size_usd', '$0.00', highlight_yes),
+            ('yes_ask2_price', '$0.000', False),
+            ('yes_ask2_size_usd', '$0.00', False),
+            ('no_bid1_price', '$0.000', False),
+            ('no_bid1_size_usd', '$0.00', highlight_no),
+            ('no_bid2_price', '$0.000', False),
+            ('no_bid2_size_usd', '$0.00', False),
+            ('no_ask1_price', '$0.000', False),
+            ('no_ask1_size_usd', '$0.00', highlight_no),
+            ('no_ask2_price', '$0.000', False),
+            ('no_ask2_size_usd', '$0.00', False),
+        ]
+        
+        for field, num_format, should_highlight in orderbook_fields:
+            value = orderbook_data.get(field)
+            if value is not None:
+                precision = 3 if 'price' in field else 2
+                fill = self.styles.action_highlight if should_highlight else None
+                self._write_cell(row, col, round(value, precision), self.styles.currency_alignment, num_format, fill)
+            col += 1
+    
+    def _write_strategy_columns(self, row: int, best_strategy: Dict, platform1_name: str, platform2_name: str):
+        strategy_type = best_strategy['type']
+        
+        if 'Yes on App1, No on App2' in strategy_type:
+            yes_platform = platform1_name
+            no_platform = platform2_name
+        else:
+            yes_platform = platform2_name
+            no_platform = platform1_name
+        
+        self._write_cell(row, 4, yes_platform, self.styles.center_alignment)
+        self._write_cell(row, 5, no_platform, self.styles.center_alignment)
+    
+    def _set_column_widths(self, column_widths: Dict[int, int]):
+        for col_num, width in column_widths.items():
+            self.ws.column_dimensions[get_column_letter(col_num)].width = width
+    
+    def _finalize_sheet(self):
+        self.ws.freeze_panes = "A2"
+        self.ws.auto_filter.ref = self.ws.dimensions
+    
+    def build_sheet(self, opportunities: List[Dict],
+                   platform1_name: str, platform2_name: str, 
+                   platform1_widths: tuple = (10, 10), platform2_widths: tuple = (10, 10)):
+        sorted_opportunities = self._sort_opportunities(opportunities)
+        
+        # Check if any opportunity has orderbook data
+        has_orderbook = any(opp.get('polymarket_orderbook') for opp in sorted_opportunities)
+        
+        headers = self._build_headers(platform1_name, platform2_name, include_orderbook=has_orderbook)
+        self._write_headers(headers)
+        
+        for idx, opp in enumerate(sorted_opportunities, 1):
+            market = opp['market']
+            arb = opp['arbitrage']
+            best = arb['best_strategy']
+            
+            if not best:
+                continue
+            
+            row = idx + 1
+            
+            self._write_basic_columns(row, idx, market, best, arb)
+            self._write_strategy_columns(row, best, platform1_name, platform2_name)
+            self._write_price_columns(row, arb, best, platform1_name, platform2_name)
+            
+            shares_app1, shares_app2 = self._calculate_shares(arb, best)
+            self._write_shares_columns(row, shares_app1, shares_app2)
+            
+            # Write orderbook data if available
+            orderbook_data = opp.get('polymarket_orderbook')
+            if orderbook_data:
+                self._write_orderbook_columns(row, orderbook_data, best)
+        
+        column_widths = {
+            1: 6,
+            2: 50,
+            3: 10,
+            4: 13,
+            5: 13,
+            6: platform1_widths[0] + 1,
+            7: platform1_widths[0] + 1,
+            8: platform2_widths[0] + 1,
+            9: platform2_widths[0] + 1,
+            10: platform1_widths[1] + 1,
+            11: platform2_widths[1] + 1,
+        }
+        
+        # Add orderbook column widths if present
+        has_orderbook = any(opp.get('polymarket_orderbook') for opp in sorted_opportunities)
+        if has_orderbook:
+            column_widths.update({
+                12: 11,  # YES Bid 1
+                13: 14,  # YES Bid 1 Size $
+                14: 11,  # YES Bid 2
+                15: 14,  # YES Bid 2 Size $
+                16: 11,  # YES Ask 1
+                17: 14,  # YES Ask 1 Size $
+                18: 11,  # YES Ask 2
+                19: 14,  # YES Ask 2 Size $
+                20: 11,  # NO Bid 1
+                21: 14,  # NO Bid 1 Size $
+                22: 11,  # NO Bid 2
+                23: 14,  # NO Bid 2 Size $
+                24: 11,  # NO Ask 1
+                25: 14,  # NO Ask 1 Size $
+                26: 11,  # NO Ask 2
+                27: 14,  # NO Ask 2 Size $
+            })
+        
+        self._set_column_widths(column_widths)
+        self._finalize_sheet()
+
+
+def generate_excel_report(opportunities: List[Dict], output_path: str, 
+                         opinion_opportunities: Optional[List[Dict]] = None,
+                         opinion_vs_predict_opportunities: Optional[List[Dict]] = None):
     wb = Workbook()
+    styles = ExcelStyles()
+    
     ws = wb.active
-    ws.title = "Arbitrage Opportunities"
-
-    # Define header styles
-    header_font = Font(bold=True, color="FFFFFF", size=12)
-    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-    border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
-
-    # Define headers with allocation columns
-    headers = [
-        "Rank",
-        "Market ID",
-        "Question",
-        "Strategy Type",
-        "ROI %",
-        "Profit $",
-        "Total Cost $",
-        "App1 YES",
-        "App1 NO",
-        "App2 YES",
-        "App2 NO",
-        "Action App1",
-        "Action App2",
-        "Slug"
-    ]
-
-    # Add allocation columns if available
-    if allocation_result:
-        headers.extend([
-            "Allocated Capital",
-            "Bet on YES",
-            "Platform YES",
-            "Bet on NO",
-            "Platform NO",
-            "Expected Profit",
-            "Allocation ROI %"
-        ])
-
-    # Write headers
-    for col_num, header in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col_num)
-        cell.value = header
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.alignment = header_alignment
-        cell.border = border
-
-    # Define data alignment and formats
-    center_alignment = Alignment(horizontal="center", vertical="center")
-    left_alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
-    currency_alignment = Alignment(horizontal="right", vertical="center")
-    action_highlight = PatternFill(start_color="D4EDDA", end_color="D4EDDA", fill_type="solid")
-
-    # Fill data rows
-    for idx, opp in enumerate(sorted_opportunities, 1):
-        market = opp['market']
-        arb = opp['arbitrage']
-        best = arb['best_strategy']
-
-        if not best:
-            continue
-
-        row = idx + 1
-
-        # Rank
-        cell = ws.cell(row=row, column=1, value=idx)
-        cell.alignment = center_alignment
-        cell.border = border
-
-        # Market ID
-        cell = ws.cell(row=row, column=2, value=market['id'])
-        cell.alignment = center_alignment
-        cell.border = border
-
-        # Question
-        cell = ws.cell(row=row, column=3, value=market['question'])
-        cell.alignment = left_alignment
-        cell.border = border
-
-        # Strategy Type
-        cell = ws.cell(row=row, column=4, value=best['type'])
-        cell.alignment = center_alignment
-        cell.border = border
-
-        # ROI %
-        cell = ws.cell(row=row, column=5, value=round(best['roi_percent'], 2))
-        cell.alignment = currency_alignment
-        cell.number_format = '0.00"%"'
-        cell.border = border
-        if best['roi_percent'] > 50:
-            cell.fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
-        elif best['roi_percent'] > 10:
-            cell.fill = PatternFill(start_color="FFEB9C", end_color="FFEB9C", fill_type="solid")
-
-        # Profit $
-        cell = ws.cell(row=row, column=6, value=round(best['profit'], 3))
-        cell.alignment = currency_alignment
-        cell.number_format = '$0.000'
-        cell.border = border
-
-        # Total Cost $
-        cell = ws.cell(row=row, column=7, value=round(best['cost'], 3))
-        cell.alignment = currency_alignment
-        cell.number_format = '$0.000'
-        cell.border = border
-
-        # App1 YES
-        cell = ws.cell(row=row, column=8, value=round(arb['market1_yes'], 3))
-        cell.alignment = currency_alignment
-        cell.number_format = '$0.000'
-        cell.border = border
-
-        # App1 NO
-        cell = ws.cell(row=row, column=9, value=round(arb['market1_no'], 3))
-        cell.alignment = currency_alignment
-        cell.number_format = '$0.000'
-        cell.border = border
-
-        # App2 YES
-        cell = ws.cell(row=row, column=10, value=round(arb['market2_yes'], 3))
-        cell.alignment = currency_alignment
-        cell.number_format = '$0.000'
-        cell.border = border
-
-        # App2 NO
-        cell = ws.cell(row=row, column=11, value=round(arb['market2_no'], 3))
-        cell.alignment = currency_alignment
-        cell.number_format = '$0.000'
-        cell.border = border
-
-        # Action App1
-        cell = ws.cell(row=row, column=12, value=best['action_app1'])
-        cell.alignment = left_alignment
-        cell.border = border
-
-        # Action App2
-        cell = ws.cell(row=row, column=13, value=best['action_app2'])
-        cell.alignment = left_alignment
-        cell.border = border
-
-        # Slug
-        cell = ws.cell(row=row, column=14, value=market['slug'])
-        cell.alignment = left_alignment
-        cell.border = border
-
-        # Add allocation columns if available
-        if allocation_result:
-            market_id = market['id']
-            if market_id in allocation_lookup:
-                allocation = allocation_lookup[market_id]
-                bet_details = allocation['bet_details']
-
-                # Allocated Capital
-                cell = ws.cell(row=row, column=15, value=round(bet_details['allocated_capital'], 2))
-                cell.alignment = currency_alignment
-                cell.number_format = '$0.00'
-                cell.border = border
-                cell.fill = action_highlight
-
-                # Bet on YES
-                cell = ws.cell(row=row, column=16, value=round(bet_details['bet_yes'], 2))
-                cell.alignment = currency_alignment
-                cell.number_format = '$0.00'
-                cell.border = border
-                cell.fill = action_highlight
-
-                # Platform YES
-                cell = ws.cell(row=row, column=17, value=bet_details['platform_yes'])
-                cell.alignment = center_alignment
-                cell.border = border
-                cell.fill = action_highlight
-
-                # Bet on NO
-                cell = ws.cell(row=row, column=18, value=round(bet_details['bet_no'], 2))
-                cell.alignment = currency_alignment
-                cell.number_format = '$0.00'
-                cell.border = border
-                cell.fill = action_highlight
-
-                # Platform NO
-                cell = ws.cell(row=row, column=19, value=bet_details['platform_no'])
-                cell.alignment = center_alignment
-                cell.border = border
-                cell.fill = action_highlight
-
-                # Expected Profit
-                cell = ws.cell(row=row, column=20, value=round(bet_details['expected_profit'], 2))
-                cell.alignment = currency_alignment
-                cell.number_format = '$0.00'
-                cell.border = border
-                cell.fill = action_highlight
-
-                # Allocation ROI %
-                cell = ws.cell(row=row, column=21, value=round(bet_details['roi_percent'], 2))
-                cell.alignment = currency_alignment
-                cell.number_format = '0.00"%"'
-                cell.border = border
-                cell.fill = action_highlight
-            else:
-                # Empty cells for non-allocated opportunities
-                for col in range(15, 22):
-                    cell = ws.cell(row=row, column=col, value="")
-                    cell.border = border
-
-    # Auto-adjust column widths
-    column_widths = {
-        1: 6,   # Rank
-        2: 10,  # Market ID
-        3: 50,  # Question
-        4: 20,  # Strategy Type
-        5: 10,  # ROI %
-        6: 10,  # Profit $
-        7: 12,  # Total Cost $
-        8: 10,  # App1 YES
-        9: 10,  # App1 NO
-        10: 10, # App2 YES
-        11: 10, # App2 NO
-        12: 25, # Action App1
-        13: 25, # Action App2
-        14: 40  # Slug
-    }
-
-    if allocation_result:
-        column_widths.update({
-            15: 15, # Allocated Capital
-            16: 12, # Bet on YES
-            17: 15, # Platform YES
-            18: 12, # Bet on NO
-            19: 15, # Platform NO
-            20: 15, # Expected Profit
-            21: 15  # Allocation ROI %
-        })
-
-    for col_num, width in column_widths.items():
-        ws.column_dimensions[get_column_letter(col_num)].width = width
-
-    # Freeze the header row
-    ws.freeze_panes = "A2"
-
-    # Add auto-filter to all columns
-    ws.auto_filter.ref = ws.dimensions
-
-    # Create Action Plan sheet if allocation exists
-    if allocation_result and allocation_result.get('allocations'):
-        _create_action_plan_sheet(wb, allocation_result)
-
-    # Create Summary sheet if allocation exists
-    if allocation_result:
-        _create_summary_sheet(wb, allocation_result)
-
-    # Save workbook
+    ws.title = "Polymarket vs predict.fun"
+    
+    builder = SheetBuilder(ws, styles)
+    builder.build_sheet(opportunities, "Polymarket", "predict.fun", 
+                       platform1_widths=(15, 17), platform2_widths=(15, 17))
+    
+    # Always create Opinion sheet if opinion_opportunities is provided (even if empty)
+    if opinion_opportunities is not None:
+        ws_opinion = wb.create_sheet(title="Polymarket vs Opinion")
+        builder_opinion = SheetBuilder(ws_opinion, styles)
+        if len(opinion_opportunities) > 0:
+            builder_opinion.build_sheet(opinion_opportunities, 
+                                       "Polymarket", "Opinion",
+                                       platform1_widths=(15, 17), platform2_widths=(12, 14))
+        else:
+            # Create empty sheet with headers only
+            builder_opinion.build_sheet([], "Polymarket", "Opinion",
+                                       platform1_widths=(15, 17), platform2_widths=(12, 14))
+    
+    # Create Opinion vs predict.fun sheet
+    if opinion_vs_predict_opportunities is not None:
+        ws_opinion_predict = wb.create_sheet(title="Opinion vs predict.fun")
+        builder_opinion_predict = SheetBuilder(ws_opinion_predict, styles)
+        if len(opinion_vs_predict_opportunities) > 0:
+            builder_opinion_predict.build_sheet(opinion_vs_predict_opportunities,
+                                               "Opinion", "predict.fun",
+                                               platform1_widths=(12, 14), platform2_widths=(15, 17))
+        else:
+            # Create empty sheet with headers only
+            builder_opinion_predict.build_sheet([], "Opinion", "predict.fun",
+                                               platform1_widths=(12, 14), platform2_widths=(15, 17))
+    
     wb.save(output_path)
-
-
-def _create_action_plan_sheet(wb: Workbook, allocation_result: Dict):
-    ws = wb.create_sheet("Action Plan")
-
-    # Header styles
-    title_font = Font(bold=True, size=16, color="FFFFFF")
-    title_fill = PatternFill(start_color="2E75B6", end_color="2E75B6", fill_type="solid")
-    header_font = Font(bold=True, color="FFFFFF", size=12)
-    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    step_font = Font(bold=True, size=11)
-    action_fill = PatternFill(start_color="D4EDDA", end_color="D4EDDA", fill_type="solid")
-    border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
-
-    # Title
-    ws.merge_cells('A1:E1')
-    cell = ws.cell(row=1, column=1, value="CAPITAL ALLOCATION ACTION PLAN")
-    cell.font = title_font
-    cell.fill = title_fill
-    cell.alignment = Alignment(horizontal="center", vertical="center")
-    cell.border = border
-    ws.row_dimensions[1].height = 30
-
-    # Summary info
-    row = 3
-    ws.cell(row=row, column=1, value="Total Capital:").font = Font(bold=True)
-    ws.cell(row=row, column=2, value=f"${allocation_result['total_capital']:.2f}")
-
-    row += 1
-    ws.cell(row=row, column=1, value="Deployed:").font = Font(bold=True)
-    ws.cell(row=row, column=2, value=f"${allocation_result['total_deployed']:.2f}")
-
-    row += 1
-    ws.cell(row=row, column=1, value="Expected Profit:").font = Font(bold=True)
-    ws.cell(row=row, column=2, value=f"${allocation_result['total_expected_profit']:.2f}")
-
-    row += 1
-    ws.cell(row=row, column=1, value="Overall ROI:").font = Font(bold=True)
-    ws.cell(row=row, column=2, value=f"{allocation_result['overall_roi_percent']:.2f}%")
-
-    row += 1
-    ws.cell(row=row, column=1, value="Strategy:").font = Font(bold=True)
-    ws.cell(row=row, column=2, value=allocation_result['strategy'])
-
-    # Action steps
-    row += 2
-    ws.cell(row=row, column=1, value="Step-by-Step Betting Instructions:").font = Font(bold=True, size=14)
-
-    row += 1
-    headers = ["Step", "Market Question", "Action", "Platform", "Amount"]
-    for col_num, header in enumerate(headers, 1):
-        cell = ws.cell(row=row, column=col_num, value=header)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-        cell.border = border
-
-    step_num = 1
-    for allocation in allocation_result['allocations']:
-        market = allocation['opportunity']['market']
-        bet_details = allocation['bet_details']
-
-        # YES bet
-        row += 1
-        ws.cell(row=row, column=1, value=step_num).alignment = Alignment(horizontal="center")
-        ws.cell(row=row, column=2, value=market['question']).alignment = Alignment(horizontal="left", wrap_text=True)
-        ws.cell(row=row, column=3, value=f"Bet on YES").alignment = Alignment(horizontal="center")
-        ws.cell(row=row, column=4, value=bet_details['platform_yes']).alignment = Alignment(horizontal="center")
-        cell = ws.cell(row=row, column=5, value=round(bet_details['bet_yes'], 2))
-        cell.alignment = Alignment(horizontal="right")
-        cell.number_format = '$0.00'
-
-        for col in range(1, 6):
-            ws.cell(row=row, column=col).fill = action_fill
-            ws.cell(row=row, column=col).border = border
-
-        step_num += 1
-
-        # NO bet
-        row += 1
-        ws.cell(row=row, column=1, value=step_num).alignment = Alignment(horizontal="center")
-        ws.cell(row=row, column=2, value=market['question']).alignment = Alignment(horizontal="left", wrap_text=True)
-        ws.cell(row=row, column=3, value=f"Bet on NO").alignment = Alignment(horizontal="center")
-        ws.cell(row=row, column=4, value=bet_details['platform_no']).alignment = Alignment(horizontal="center")
-        cell = ws.cell(row=row, column=5, value=round(bet_details['bet_no'], 2))
-        cell.alignment = Alignment(horizontal="right")
-        cell.number_format = '$0.00'
-
-        for col in range(1, 6):
-            ws.cell(row=row, column=col).fill = action_fill
-            ws.cell(row=row, column=col).border = border
-
-        step_num += 1
-
-    # Column widths
-    ws.column_dimensions['A'].width = 8
-    ws.column_dimensions['B'].width = 60
-    ws.column_dimensions['C'].width = 15
-    ws.column_dimensions['D'].width = 20
-    ws.column_dimensions['E'].width = 15
-
-
-def _create_summary_sheet(wb: Workbook, allocation_result: Dict):
-    ws = wb.create_sheet("Summary", 0)
-
-    # Header styles
-    title_font = Font(bold=True, size=18, color="FFFFFF")
-    title_fill = PatternFill(start_color="2E75B6", end_color="2E75B6", fill_type="solid")
-    label_font = Font(bold=True, size=12)
-    value_font = Font(size=12)
-    border = Border(
-        left=Side(style='medium'),
-        right=Side(style='medium'),
-        top=Side(style='medium'),
-        bottom=Side(style='medium')
-    )
-
-    # Title
-    ws.merge_cells('A1:C1')
-    cell = ws.cell(row=1, column=1, value="CAPITAL ALLOCATION SUMMARY")
-    cell.font = title_font
-    cell.fill = title_fill
-    cell.alignment = Alignment(horizontal="center", vertical="center")
-    cell.border = border
-    ws.row_dimensions[1].height = 35
-
-    # Summary table
-    row = 3
-    summary_data = [
-        ("Total Capital Available", f"${allocation_result['total_capital']:.2f}"),
-        ("Capital Deployed", f"${allocation_result['total_deployed']:.2f}"),
-        ("Unallocated Capital", f"${allocation_result['total_unallocated']:.2f}"),
-        ("", ""),
-        ("Number of Opportunities", str(allocation_result['num_opportunities'])),
-        ("", ""),
-        ("Total Expected Profit", f"${allocation_result['total_expected_profit']:.2f}"),
-        ("Overall ROI", f"{allocation_result['overall_roi_percent']:.2f}%"),
-        ("", ""),
-        ("Allocation Strategy", allocation_result['strategy'].replace('_', ' ').title()),
-    ]
-
-    for label, value in summary_data:
-        if label == "":
-            row += 1
-            continue
-
-        cell = ws.cell(row=row, column=1, value=label)
-        cell.font = label_font
-        cell.alignment = Alignment(horizontal="left", vertical="center")
-
-        cell = ws.cell(row=row, column=2, value=value)
-        cell.font = value_font
-        cell.alignment = Alignment(horizontal="right", vertical="center")
-
-        # Highlight profit row
-        if "Profit" in label or "ROI" in label:
-            cell.fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
-
-        row += 1
-
-    # Column widths
-    ws.column_dimensions['A'].width = 30
-    ws.column_dimensions['B'].width = 20
-    ws.column_dimensions['C'].width = 10

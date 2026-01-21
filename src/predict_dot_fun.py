@@ -1,15 +1,20 @@
 from typing import Optional, Dict, List
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import os
+import time
 
 import requests
 
 BASE_URL = "https://api.predict.fun/v1"
-CATEGORY_SLUG = "metamask-fdv-above-one-day-after-launch"  # Change this to the desired category slug
 
 PREDICT_DOT_FUN_API_KEY = os.environ.get('PREDICT_DOT_FUN_API_KEY')
-JWT_TOKEN = ""  # Your JWT token here
+JWT_TOKEN = ""
+
+POLYMARKET_TO_PREDICT_DOT_FUN_CATEGORY_SLUGS = {
+    "will-base-launch-a-token-in-2025-341": "will-base-launch-a-token-in-2026",
+}
 
 
 def get_headers():
@@ -26,6 +31,7 @@ def get_headers():
 
 
 def get_category_by_slug(slug: str):
+    slug = POLYMARKET_TO_PREDICT_DOT_FUN_CATEGORY_SLUGS.get(slug, slug)
     endpoint = f"{BASE_URL}/categories/{slug}"
     
     headers = get_headers()
@@ -45,6 +51,7 @@ def get_market_orderbook(market_id: int) -> Optional[dict]:
     endpoint = f"{BASE_URL}/markets/{market_id}/orderbook"
     
     try:
+        time.sleep(0.1)
         response = requests.get(endpoint, headers=get_headers())
         response.raise_for_status()
         return response.json()
@@ -97,16 +104,12 @@ def fetch_market_prices(category_data: dict) -> List[Dict]:
         return []
     
     markets = category_data.get("data", {}).get("markets", [])
-    markets_with_prices = []
     
-    print(f"\nFetching prices for {len(markets)} markets...")
+    print(f"\nFetching prices for {len(markets)} markets in parallel for {category_data.get('data', {}).get('title', 'unknown category')}...")
     
-    for idx, market in enumerate(markets, 1):
+    def fetch_single_market(market):
         market_id = market.get("id")
         market_title = market.get("title")
-        market_slug = market.get("categorySlug")
-        
-        print(f"  [{idx}/{len(markets)}] Fetching {market_title}...", end="", flush=True)
         
         # Fetch orderbook for this market
         orderbook = get_market_orderbook(market_id)
@@ -124,8 +127,26 @@ def fetch_market_prices(category_data: dict) -> List[Dict]:
         if orderbook and orderbook.get("success"):
             market_with_prices["updateTimestamp"] = orderbook.get("data", {}).get("updateTimestampMs")
         
-        markets_with_prices.append(market_with_prices)
-        print(" ✓")
+        return market_with_prices, market_title
+    
+    markets_with_prices = []
+    
+    # Use ThreadPoolExecutor to fetch orderbooks in parallel
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # Submit all tasks
+        future_to_market = {executor.submit(fetch_single_market, market): market for market in markets}
+        
+        # Process completed tasks as they finish
+        completed = 0
+        for future in as_completed(future_to_market):
+            completed += 1
+            try:
+                market_with_prices, market_title = future.result()
+                markets_with_prices.append(market_with_prices)
+                print(f"  [{completed}/{len(markets)}] Fetched {market_title}... ✓")
+            except Exception as e:
+                market = future_to_market[future]
+                print(f"  [{completed}/{len(markets)}] Error fetching {market.get('title')}: {e}")
     
     return markets_with_prices
 
@@ -165,6 +186,7 @@ def get_predict_dot_fun_data(slugs: list):
         category_data = get_category_by_slug(slug)
 
         if not (category_data and category_data.get("success")):
+            print(f"Failed to retrieve category data for slug: {slug}")
             continue
 
         markets_with_prices = fetch_market_prices(category_data)
@@ -186,7 +208,9 @@ def get_predict_dot_fun_data(slugs: list):
                 "yes_price": float(yes_buy),
                 "no_price": float(no_buy),
                 "source": "predict.fun",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
+                "category_slug": market.get("categorySlug"),
+                "market_title": market.get("title")
             }
 
     return price_lookup
@@ -194,10 +218,10 @@ def get_predict_dot_fun_data(slugs: list):
 
 
 if __name__ == "__main__":
-    print(f"Fetching category: {CATEGORY_SLUG}")
+    category_slug = "metamask-fdv-above-one-day-after-launch"
+    print(f"Fetching category: {category_slug}")
     
-    # Fetch category data
-    category_data = get_category_by_slug(CATEGORY_SLUG)
+    category_data = get_category_by_slug(category_slug)
     
     if category_data and category_data.get("success"):
         # Fetch market prices
