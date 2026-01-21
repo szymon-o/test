@@ -167,21 +167,21 @@ class SheetBuilder:
         col = 12 + col_offset
         orderbook_fields = [
             ('yes_bid1_price', '$0.000', False),
-            ('yes_bid1_size_usd', '$0.00', highlight_yes),
+            ('yes_bid1_size_usd', '$0.00', False),  # Bid sizes never highlighted
             ('yes_bid2_price', '$0.000', False),
-            ('yes_bid2_size_usd', '$0.00', False),
+            ('yes_bid2_size_usd', '$0.00', False),  # Bid sizes never highlighted
             ('yes_ask1_price', '$0.000', False),
-            ('yes_ask1_size_usd', '$0.00', highlight_yes),
+            ('yes_ask1_size_usd', '$0.00', highlight_yes),  # Highlight YES Ask sizes when buying YES
             ('yes_ask2_price', '$0.000', False),
-            ('yes_ask2_size_usd', '$0.00', False),
+            ('yes_ask2_size_usd', '$0.00', highlight_yes),  # Highlight YES Ask sizes when buying YES
             ('no_bid1_price', '$0.000', False),
-            ('no_bid1_size_usd', '$0.00', highlight_no),
+            ('no_bid1_size_usd', '$0.00', False),  # Bid sizes never highlighted
             ('no_bid2_price', '$0.000', False),
-            ('no_bid2_size_usd', '$0.00', False),
+            ('no_bid2_size_usd', '$0.00', False),  # Bid sizes never highlighted
             ('no_ask1_price', '$0.000', False),
-            ('no_ask1_size_usd', '$0.00', highlight_no),
+            ('no_ask1_size_usd', '$0.00', highlight_no),  # Highlight NO Ask sizes when buying NO
             ('no_ask2_price', '$0.000', False),
-            ('no_ask2_size_usd', '$0.00', False),
+            ('no_ask2_size_usd', '$0.00', highlight_no),  # Highlight NO Ask sizes when buying NO
         ]
         
         for field, num_format, should_highlight in orderbook_fields:
