@@ -135,6 +135,58 @@ def calculate_arbitrage(market1_prices: List[float], market2_prices: Dict) -> Di
     }
 
 
+def calculate_orderbook_roi(strategy_type: str, market2_prices: Dict, orderbook_data: Dict) -> Optional[float]:
+    if not orderbook_data:
+        return None
+
+    yes_price_m2 = market2_prices['yes_price']
+    no_price_m2 = market2_prices['no_price']
+
+    if 'Yes on App1, No on App2' in strategy_type:
+        yes_ask1 = orderbook_data.get('yes_ask1_price')
+        if yes_ask1 is None:
+            return None
+        cost = yes_ask1 + no_price_m2
+    else:
+        no_ask1 = orderbook_data.get('no_ask1_price')
+        if no_ask1 is None:
+            return None
+        cost = no_ask1 + yes_price_m2
+
+    if cost <= 0:
+        return None
+
+    profit = 1.0 - cost
+    roi = (profit / cost * 100)
+    return roi
+
+
+def calculate_orderbook_roi_ask2(strategy_type: str, market2_prices: Dict, orderbook_data: Dict) -> Optional[float]:
+    if not orderbook_data:
+        return None
+
+    yes_price_m2 = market2_prices['yes_price']
+    no_price_m2 = market2_prices['no_price']
+
+    if 'Yes on App1, No on App2' in strategy_type:
+        yes_ask2 = orderbook_data.get('yes_ask2_price')
+        if yes_ask2 is None:
+            return None
+        cost = yes_ask2 + no_price_m2
+    else:
+        no_ask2 = orderbook_data.get('no_ask2_price')
+        if no_ask2 is None:
+            return None
+        cost = no_ask2 + yes_price_m2
+
+    if cost <= 0:
+        return None
+
+    profit = 1.0 - cost
+    roi = (profit / cost * 100)
+    return roi
+
+
 def find_opinion_predict_matches(opinion_price_lookup: Dict[str, Dict], predict_price_lookup: Dict[str, Dict], polymarket_markets: List[Dict]) -> List[Dict]:
     """
     Match Opinion markets with predict.fun markets using Polymarket data as intermediary.
@@ -378,7 +430,19 @@ def main():
             
             if orderbook_data:
                 opp['polymarket_orderbook'] = orderbook_data
-    
+
+                # Calculate orderbook-based ROI
+                strategy_type = opp['arbitrage']['best_strategy']['type']
+                market2_data = opp['market2_data']
+                orderbook_roi = calculate_orderbook_roi(strategy_type, market2_data, orderbook_data)
+                if orderbook_roi is not None:
+                    opp['orderbook_roi_percent'] = orderbook_roi
+
+                # Calculate orderbook-based ROI using Ask2
+                orderbook_roi_ask2 = calculate_orderbook_roi_ask2(strategy_type, market2_data, orderbook_data)
+                if orderbook_roi_ask2 is not None:
+                    opp['orderbook_roi_ask2_percent'] = orderbook_roi_ask2
+
     for opp in top5_polymarket_opinion:
         clob_tokens = opp['market'].get('clobTokenIds', [])
         if clob_tokens and len(clob_tokens) >= 2:
@@ -403,6 +467,18 @@ def main():
             
             if orderbook_data:
                 opp['polymarket_orderbook'] = orderbook_data
+
+                # Calculate orderbook-based ROI
+                strategy_type = opp['arbitrage']['best_strategy']['type']
+                market2_data = opp['market2_data']
+                orderbook_roi = calculate_orderbook_roi(strategy_type, market2_data, orderbook_data)
+                if orderbook_roi is not None:
+                    opp['orderbook_roi_percent'] = orderbook_roi
+
+                # Calculate orderbook-based ROI using Ask2
+                orderbook_roi_ask2 = calculate_orderbook_roi_ask2(strategy_type, market2_data, orderbook_data)
+                if orderbook_roi_ask2 is not None:
+                    opp['orderbook_roi_ask2_percent'] = orderbook_roi_ask2
 
     # Generate report
     print(f"\n7. Generating Excel report...")
