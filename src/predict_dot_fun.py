@@ -36,6 +36,7 @@ def get_category_by_slug(slug: str):
     
     headers = get_headers()
     try:
+        time.sleep(0.1)
         response = requests.get(endpoint, headers=headers)
         response.raise_for_status()
         
@@ -99,6 +100,87 @@ def calculate_prices(orderbook: dict) -> Dict[str, Dict[str, Optional[float]]]:
     return prices
 
 
+def get_complement(price: float, decimal_precision: int = 3) -> float:
+    factor = 10 ** decimal_precision
+    return (factor - round(price * factor)) / factor
+
+
+def extract_orderbook_depth(orderbook: dict) -> Optional[Dict]:
+    if not orderbook or not orderbook.get("success"):
+        return None
+    
+    data = orderbook.get("data", {})
+    bids = data.get("bids", [])
+    asks = data.get("asks", [])
+    
+    if not bids or not asks:
+        return None
+    
+    result = {}
+    
+    # YES prices: Extract from asks[0], asks[1], bids[0], bids[1]
+    # Best prices are at index 0 for predict.fun (already sorted)
+    
+    # YES Bid 1 (highest bid for YES)
+    if len(bids) > 0:
+        yes_bid1_price = float(bids[0][0])
+        yes_bid1_size = float(bids[0][1])
+        result['yes_bid1_price'] = yes_bid1_price
+        result['yes_bid1_size_usd'] = yes_bid1_price * yes_bid1_size
+    
+    # YES Bid 2 (second-highest bid for YES)
+    if len(bids) > 1:
+        yes_bid2_price = float(bids[1][0])
+        yes_bid2_size = float(bids[1][1])
+        result['yes_bid2_price'] = yes_bid2_price
+        result['yes_bid2_size_usd'] = yes_bid2_price * yes_bid2_size
+    
+    # YES Ask 1 (lowest ask for YES)
+    if len(asks) > 0:
+        yes_ask1_price = float(asks[0][0])
+        yes_ask1_size = float(asks[0][1])
+        result['yes_ask1_price'] = yes_ask1_price
+        result['yes_ask1_size_usd'] = yes_ask1_price * yes_ask1_size
+    
+    # YES Ask 2 (second-lowest ask for YES)
+    if len(asks) > 1:
+        yes_ask2_price = float(asks[1][0])
+        yes_ask2_size = float(asks[1][1])
+        result['yes_ask2_price'] = yes_ask2_price
+        result['yes_ask2_size_usd'] = yes_ask2_price * yes_ask2_size
+    
+    # NO prices: Calculate using complement formula
+    # NO orderbook is derived from YES orderbook:
+    # - NO Bid = complement of YES Ask (to sell YES is to buy NO)
+    # - NO Ask = complement of YES Bid (to buy YES is to sell NO)
+    
+    # NO Bid 1 = complement of YES Ask 1 (best price to sell NO)
+    if 'yes_ask1_price' in result:
+        no_bid1_price = get_complement(result['yes_ask1_price'])
+        result['no_bid1_price'] = no_bid1_price
+        result['no_bid1_size_usd'] = no_bid1_price * yes_ask1_size
+    
+    # NO Bid 2 = complement of YES Ask 2
+    if 'yes_ask2_price' in result:
+        no_bid2_price = get_complement(result['yes_ask2_price'])
+        result['no_bid2_price'] = no_bid2_price
+        result['no_bid2_size_usd'] = no_bid2_price * yes_ask2_size
+    
+    # NO Ask 1 = complement of YES Bid 1 (best price to buy NO)
+    if 'yes_bid1_price' in result:
+        no_ask1_price = get_complement(result['yes_bid1_price'])
+        result['no_ask1_price'] = no_ask1_price
+        result['no_ask1_size_usd'] = no_ask1_price * yes_bid1_size
+    
+    # NO Ask 2 = complement of YES Bid 2
+    if 'yes_bid2_price' in result:
+        no_ask2_price = get_complement(result['yes_bid2_price'])
+        result['no_ask2_price'] = no_ask2_price
+        result['no_ask2_size_usd'] = no_ask2_price * yes_bid2_size
+    
+    return result if result else None
+
+
 def fetch_market_prices(category_data: dict) -> List[Dict]:
     if not category_data or not category_data.get("success"):
         return []
@@ -117,10 +199,14 @@ def fetch_market_prices(category_data: dict) -> List[Dict]:
         # Calculate prices
         prices = calculate_prices(orderbook)
         
+        # Extract orderbook depth
+        orderbook_depth = extract_orderbook_depth(orderbook) if orderbook else None
+        
         # Add prices to market data
         market_with_prices = {
             **market,
             "prices": prices,
+            "orderbook_depth": orderbook_depth,
             "updateTimestamp": None
         }
         
@@ -196,6 +282,7 @@ def get_predict_dot_fun_data(slugs: list):
             prices = market.get("prices", {})
             yes_buy = prices.get("yes", {}).get("buy")
             no_buy = prices.get("no", {}).get("buy")
+            orderbook_depth = market.get("orderbook_depth")
 
             if not polymarket_condition_ids or yes_buy is None or no_buy is None:
                 continue
@@ -210,7 +297,8 @@ def get_predict_dot_fun_data(slugs: list):
                 "source": "predict.fun",
                 "timestamp": datetime.utcnow().isoformat(),
                 "category_slug": market.get("categorySlug"),
-                "market_title": market.get("title")
+                "market_title": market.get("title"),
+                "orderbook_depth": orderbook_depth
             }
 
     return price_lookup

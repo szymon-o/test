@@ -187,6 +187,86 @@ def calculate_orderbook_roi_ask2(strategy_type: str, market2_prices: Dict, order
     return roi
 
 
+def calculate_orderbook_roi_combined_ask1(strategy_type: str, platform1_orderbook: Optional[Dict], platform2_orderbook: Optional[Dict], platform1_prices: Dict, platform2_prices: Dict) -> Optional[float]:
+    yes_price_p1 = platform1_prices.get('yes_price')
+    no_price_p1 = platform1_prices.get('no_price')
+    yes_price_p2 = platform2_prices.get('yes_price')
+    no_price_p2 = platform2_prices.get('no_price')
+
+    if 'Yes on App1, No on App2' in strategy_type:
+        # Use Ask1 price from platform1 if available, else fallback to midpoint
+        if platform1_orderbook and platform1_orderbook.get('yes_ask1_price') is not None:
+            price_p1 = platform1_orderbook['yes_ask1_price']
+        else:
+            price_p1 = yes_price_p1
+        
+        # Use Ask1 price from platform2 if available, else fallback to midpoint
+        if platform2_orderbook and platform2_orderbook.get('no_ask1_price') is not None:
+            price_p2 = platform2_orderbook['no_ask1_price']
+        else:
+            price_p2 = no_price_p2
+    else:  # 'No on App1, Yes on App2'
+        # Use Ask1 price from platform1 if available, else fallback to midpoint
+        if platform1_orderbook and platform1_orderbook.get('no_ask1_price') is not None:
+            price_p1 = platform1_orderbook['no_ask1_price']
+        else:
+            price_p1 = no_price_p1
+        
+        # Use Ask1 price from platform2 if available, else fallback to midpoint
+        if platform2_orderbook and platform2_orderbook.get('yes_ask1_price') is not None:
+            price_p2 = platform2_orderbook['yes_ask1_price']
+        else:
+            price_p2 = yes_price_p2
+
+    cost = price_p1 + price_p2
+    if cost <= 0:
+        return None
+
+    profit = 1.0 - cost
+    roi = (profit / cost * 100)
+    return roi
+
+
+def calculate_orderbook_roi_combined_ask2(strategy_type: str, platform1_orderbook: Optional[Dict], platform2_orderbook: Optional[Dict], platform1_prices: Dict, platform2_prices: Dict) -> Optional[float]:
+    yes_price_p1 = platform1_prices.get('yes_price')
+    no_price_p1 = platform1_prices.get('no_price')
+    yes_price_p2 = platform2_prices.get('yes_price')
+    no_price_p2 = platform2_prices.get('no_price')
+
+    if 'Yes on App1, No on App2' in strategy_type:
+        # Use Ask2 price from platform1 if available, else fallback to midpoint
+        if platform1_orderbook and platform1_orderbook.get('yes_ask2_price') is not None:
+            price_p1 = platform1_orderbook['yes_ask2_price']
+        else:
+            price_p1 = yes_price_p1
+        
+        # Use Ask2 price from platform2 if available, else fallback to midpoint
+        if platform2_orderbook and platform2_orderbook.get('no_ask2_price') is not None:
+            price_p2 = platform2_orderbook['no_ask2_price']
+        else:
+            price_p2 = no_price_p2
+    else:  # 'No on App1, Yes on App2'
+        # Use Ask2 price from platform1 if available, else fallback to midpoint
+        if platform1_orderbook and platform1_orderbook.get('no_ask2_price') is not None:
+            price_p1 = platform1_orderbook['no_ask2_price']
+        else:
+            price_p1 = no_price_p1
+        
+        # Use Ask2 price from platform2 if available, else fallback to midpoint
+        if platform2_orderbook and platform2_orderbook.get('yes_ask2_price') is not None:
+            price_p2 = platform2_orderbook['yes_ask2_price']
+        else:
+            price_p2 = yes_price_p2
+
+    cost = price_p1 + price_p2
+    if cost <= 0:
+        return None
+
+    profit = 1.0 - cost
+    roi = (profit / cost * 100)
+    return roi
+
+
 def find_opinion_predict_matches(opinion_price_lookup: Dict[str, Dict], predict_price_lookup: Dict[str, Dict], polymarket_markets: List[Dict]) -> List[Dict]:
     """
     Match Opinion markets with predict.fun markets using Polymarket data as intermediary.
@@ -430,18 +510,40 @@ def main():
             
             if orderbook_data:
                 opp['polymarket_orderbook'] = orderbook_data
+        
+        # Attach predict.fun orderbook depth
+        condition_id = opp['market'].get('conditionId')
+        predict_orderbook = None
+        if condition_id and condition_id in predict_price_lookup:
+            predict_orderbook = predict_price_lookup[condition_id].get('orderbook_depth')
+            if predict_orderbook:
+                opp['predict_orderbook'] = predict_orderbook
+        
+        # Calculate combined orderbook-based ROI using both platforms' orderbooks
+        strategy_type = opp['arbitrage']['best_strategy']['type']
+        polymarket_orderbook = opp.get('polymarket_orderbook')
+        
+        # Build platform price dicts for combined ROI calculation
+        platform1_prices = {
+            'yes_price': opp['market']['outcomePrices'][0],
+            'no_price': opp['market']['outcomePrices'][1]
+        }
+        platform2_prices = opp['market2_data']
+        
+        orderbook_roi = calculate_orderbook_roi_combined_ask1(
+            strategy_type, polymarket_orderbook, predict_orderbook, 
+            platform1_prices, platform2_prices
+        )
+        if orderbook_roi is not None:
+            opp['orderbook_roi_percent'] = orderbook_roi
 
-                # Calculate orderbook-based ROI
-                strategy_type = opp['arbitrage']['best_strategy']['type']
-                market2_data = opp['market2_data']
-                orderbook_roi = calculate_orderbook_roi(strategy_type, market2_data, orderbook_data)
-                if orderbook_roi is not None:
-                    opp['orderbook_roi_percent'] = orderbook_roi
-
-                # Calculate orderbook-based ROI using Ask2
-                orderbook_roi_ask2 = calculate_orderbook_roi_ask2(strategy_type, market2_data, orderbook_data)
-                if orderbook_roi_ask2 is not None:
-                    opp['orderbook_roi_ask2_percent'] = orderbook_roi_ask2
+        # Calculate orderbook-based ROI using Ask2
+        orderbook_roi_ask2 = calculate_orderbook_roi_combined_ask2(
+            strategy_type, polymarket_orderbook, predict_orderbook,
+            platform1_prices, platform2_prices
+        )
+        if orderbook_roi_ask2 is not None:
+            opp['orderbook_roi_ask2_percent'] = orderbook_roi_ask2
 
     for opp in top5_polymarket_opinion:
         clob_tokens = opp['market'].get('clobTokenIds', [])
@@ -467,18 +569,84 @@ def main():
             
             if orderbook_data:
                 opp['polymarket_orderbook'] = orderbook_data
+        
+        # Extract Opinion orderbook depth
+        category_slug = opp['market'].get('category_slug', '')
+        market_title = opp['market'].get('title', '')
+        opinion_key = f"{category_slug}||{market_title}"
+        
+        opinion_orderbook = None
+        if opinion_key in opinion_price_lookup:
+            opinion_orderbook = opinion_price_lookup[opinion_key].get('orderbook_depth')
+            if opinion_orderbook:
+                opp['opinion_orderbook'] = opinion_orderbook
+        
+        # Calculate combined orderbook-based ROI using both platforms' orderbooks
+        strategy_type = opp['arbitrage']['best_strategy']['type']
+        polymarket_orderbook = opp.get('polymarket_orderbook')
+        
+        # Build platform price dicts for combined ROI calculation
+        platform1_prices = {
+            'yes_price': opp['market']['outcomePrices'][0],
+            'no_price': opp['market']['outcomePrices'][1]
+        }
+        platform2_prices = opp['market2_data']
+        
+        orderbook_roi = calculate_orderbook_roi_combined_ask1(
+            strategy_type, polymarket_orderbook, opinion_orderbook,
+            platform1_prices, platform2_prices
+        )
+        if orderbook_roi is not None:
+            opp['orderbook_roi_percent'] = orderbook_roi
 
-                # Calculate orderbook-based ROI
-                strategy_type = opp['arbitrage']['best_strategy']['type']
-                market2_data = opp['market2_data']
-                orderbook_roi = calculate_orderbook_roi(strategy_type, market2_data, orderbook_data)
-                if orderbook_roi is not None:
-                    opp['orderbook_roi_percent'] = orderbook_roi
+        # Calculate orderbook-based ROI using Ask2
+        orderbook_roi_ask2 = calculate_orderbook_roi_combined_ask2(
+            strategy_type, polymarket_orderbook, opinion_orderbook,
+            platform1_prices, platform2_prices
+        )
+        if orderbook_roi_ask2 is not None:
+            opp['orderbook_roi_ask2_percent'] = orderbook_roi_ask2
 
-                # Calculate orderbook-based ROI using Ask2
-                orderbook_roi_ask2 = calculate_orderbook_roi_ask2(strategy_type, market2_data, orderbook_data)
-                if orderbook_roi_ask2 is not None:
-                    opp['orderbook_roi_ask2_percent'] = orderbook_roi_ask2
+    # Handle Opinion vs predict.fun top 5 opportunities
+    top5_opinion_predict = sorted(
+        opinion_vs_predict_opportunities,
+        key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0,
+        reverse=True
+    )[:5]
+    
+    for opp in top5_opinion_predict:
+        # Extract predict.fun orderbook depth from market2_data
+        market_id = opp['market2_data'].get('market_id')
+        predict_orderbook = opp['market2_data'].get('orderbook_depth')
+        
+        if predict_orderbook:
+            opp['predict_orderbook'] = predict_orderbook
+        
+        # Calculate combined orderbook-based ROI
+        # Opinion has no orderbook, so only use predict.fun orderbook
+        strategy_type = opp['arbitrage']['best_strategy']['type']
+        
+        # Build platform price dicts
+        platform1_prices = {
+            'yes_price': opp['market']['outcomePrices'][0],
+            'no_price': opp['market']['outcomePrices'][1]
+        }
+        platform2_prices = opp['market2_data']
+        
+        orderbook_roi = calculate_orderbook_roi_combined_ask1(
+            strategy_type, None, predict_orderbook,
+            platform1_prices, platform2_prices
+        )
+        if orderbook_roi is not None:
+            opp['orderbook_roi_percent'] = orderbook_roi
+
+        # Calculate orderbook-based ROI using Ask2
+        orderbook_roi_ask2 = calculate_orderbook_roi_combined_ask2(
+            strategy_type, None, predict_orderbook,
+            platform1_prices, platform2_prices
+        )
+        if orderbook_roi_ask2 is not None:
+            opp['orderbook_roi_ask2_percent'] = orderbook_roi_ask2
 
     # Generate report
     print(f"\n7. Generating Excel report...")

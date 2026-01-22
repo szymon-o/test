@@ -3,7 +3,7 @@ import requests
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from config import MARKET_CONFIGS, OPINION_API_DATA_URL, OPINION_TOKEN_URL
+from config import MARKET_CONFIGS, OPINION_API_DATA_URL, OPINION_TOKEN_URL, OPINION_ORDERBOOK_URL
 
 
 API_KEY = os.getenv('OPINION_API_KEY')
@@ -23,22 +23,69 @@ def fetch_opinion_market_data(slug: str, market_id: int) -> Tuple[str, Optional[
         return (slug, None)
 
 
-def fetch_token_price(token_id: str, token_type: str) -> Tuple[str, str, Optional[float]]:
+def extract_opinion_orderbook_depth(sorted_bids: List[Dict], sorted_asks: List[Dict]) -> Optional[Dict]:
+    if not sorted_asks:
+        return None
+    
+    result = {}
+    
+    # Extract Bid 1 (highest bid)
+    if len(sorted_bids) > 0:
+        bid1_price = float(sorted_bids[0]['price'])
+        bid1_size = float(sorted_bids[0]['size'])
+        result['bid1_price'] = bid1_price
+        result['bid1_size_usd'] = bid1_price * bid1_size
+    
+    # Extract Bid 2 (second-highest bid)
+    if len(sorted_bids) > 1:
+        bid2_price = float(sorted_bids[1]['price'])
+        bid2_size = float(sorted_bids[1]['size'])
+        result['bid2_price'] = bid2_price
+        result['bid2_size_usd'] = bid2_price * bid2_size
+    
+    # Extract Ask 1 (lowest ask)
+    if len(sorted_asks) > 0:
+        ask1_price = float(sorted_asks[0]['price'])
+        ask1_size = float(sorted_asks[0]['size'])
+        result['ask1_price'] = ask1_price
+        result['ask1_size_usd'] = ask1_price * ask1_size
+    
+    # Extract Ask 2 (second-lowest ask)
+    if len(sorted_asks) > 1:
+        ask2_price = float(sorted_asks[1]['price'])
+        ask2_size = float(sorted_asks[1]['size'])
+        result['ask2_price'] = ask2_price
+        result['ask2_size_usd'] = ask2_price * ask2_size
+    
+    return result if result else None
+
+
+def fetch_token_orderbook(token_id: str, token_type: str) -> Tuple[str, str, Optional[Dict]]:
     time.sleep(0.1)
     try:
-        response = requests.get(OPINION_TOKEN_URL, headers=HEADERS, 
+        response = requests.get(OPINION_ORDERBOOK_URL, headers=HEADERS, 
                                 params={"token_id": token_id})
         response.raise_for_status()
         data = response.json()
         
-        result = data.get('result', {})
-        price = result.get('price')
+        errno = data.get('errno')
+        if errno != 0:
+            return (token_id, token_type, None)
         
-        if price is not None:
-            return (token_id, token_type, float(price))
-        return (token_id, token_type, None)
+        result = data.get('result', {})
+        bids = result.get('bids', [])
+        asks = result.get('asks', [])
+        
+        # Sort orderbooks (Opinion returns unsorted data)
+        sorted_bids = sorted(bids, key=lambda x: float(x['price']), reverse=True)
+        sorted_asks = sorted(asks, key=lambda x: float(x['price']))
+        
+        # Extract orderbook depth
+        orderbook_depth = extract_opinion_orderbook_depth(sorted_bids, sorted_asks)
+        
+        return (token_id, token_type, orderbook_depth)
     except (requests.exceptions.RequestException, ValueError, KeyError) as e:
-        print(f"Error fetching token price for {token_id}: {e}")
+        print(f"Error fetching orderbook for {token_id}: {e}")
         return (token_id, token_type, None)
 
 
@@ -134,7 +181,7 @@ def get_opinion_price_lookup(opinion_markets: List[Dict]) -> Dict[str, Dict]:
     
     with ThreadPoolExecutor(max_workers=20) as executor:
         future_to_token = {
-            executor.submit(fetch_token_price, token_id, token_type): (market, token_id, token_type)
+            executor.submit(fetch_token_orderbook, token_id, token_type): (market, token_id, token_type)
             for market, token_id, token_type in token_requests
         }
         
@@ -143,9 +190,9 @@ def get_opinion_price_lookup(opinion_markets: List[Dict]) -> Dict[str, Dict]:
             completed += 1
             market, token_id, token_type = future_to_token[future]
             try:
-                token_id, token_type, price = future.result()
-                if price is not None:
-                    prices_map[token_id] = price
+                token_id, token_type, orderbook_depth = future.result()
+                if orderbook_depth is not None:
+                    prices_map[token_id] = orderbook_depth
                     print(f"  [{completed}/{len(token_requests)}] Fetched {token_type} token for {market.get('market_title')}... ✓")
                 else:
                     print(f"  [{completed}/{len(token_requests)}] Failed to fetch {token_type} token for {market.get('market_title')}")
@@ -156,12 +203,27 @@ def get_opinion_price_lookup(opinion_markets: List[Dict]) -> Dict[str, Dict]:
         yes_token_id = market.get('yes_token_id')
         no_token_id = market.get('no_token_id')
         
-        yes_price = prices_map.get(yes_token_id)
-        no_price = prices_map.get(no_token_id)
+        yes_orderbook = prices_map.get(yes_token_id)
+        no_orderbook = prices_map.get(no_token_id)
         
-        if yes_price is None or no_price is None:
-            print(f"Warning: Could not fetch prices for market {market.get('market_title')}")
+        # Require at least ask1 for both YES and NO
+        if yes_orderbook is None or no_orderbook is None:
+            print(f"Warning: Could not fetch orderbooks for market {market.get('market_title')}")
             continue
+        
+        yes_ask1 = yes_orderbook.get('ask1_price')
+        no_ask1 = no_orderbook.get('ask1_price')
+        
+        if yes_ask1 is None or no_ask1 is None:
+            print(f"Warning: Missing ask1 prices for market {market.get('market_title')}")
+            continue
+        
+        # Combine YES and NO orderbook depths with prefixes
+        orderbook_depth = {}
+        for key, value in yes_orderbook.items():
+            orderbook_depth[f'yes_{key}'] = value
+        for key, value in no_orderbook.items():
+            orderbook_depth[f'no_{key}'] = value
         
         # Use composite key: slug + market_title for matching
         market_key = f"{market.get('polymarket_slug')}||{market.get('market_title')}"
@@ -171,10 +233,11 @@ def get_opinion_price_lookup(opinion_markets: List[Dict]) -> Dict[str, Dict]:
             'market_title': market.get('market_title'),
             'polymarket_slug': market.get('polymarket_slug'),
             'source': 'opinion.trade',
-            'yes_price': yes_price,
-            'no_price': no_price,
+            'yes_price': yes_ask1,
+            'no_price': no_ask1,
             'volume': market.get('volume'),
             'status': market.get('status_enum'),
+            'orderbook_depth': orderbook_depth
         }
     
     return price_lookup

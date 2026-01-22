@@ -25,3 +25,4 @@ MARKET_CONFIGS: Dict[str, Optional[int]] = {
 POLYMARKET_API_EVENTS_URL = "https://gamma-api.polymarket.com/events"
 OPINION_API_DATA_URL = "https://openapi.opinion.trade/openapi/market/categorical/{marketId}"
 OPINION_TOKEN_URL = "https://openapi.opinion.trade/openapi/token/latest-price"
+OPINION_ORDERBOOK_URL = "https://openapi.opinion.trade/openapi/token/orderbook"

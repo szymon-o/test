@@ -38,54 +38,150 @@ class SheetBuilder:
             reverse=True
         )
     
-    def _build_headers(self, platform1_name: str, platform2_name: str, include_orderbook: bool = False) -> List[str]:
+    def _build_headers(self, platform1_name: str, platform2_name: str, include_orderbook: bool = False, include_platform2_orderbook: bool = False) -> List[str]:
         headers = [
             "Rank",
             "Question",
             "ROI %",
         ]
 
-        # Add Orderbook ROI columns only for Polymarket sheets with orderbook data
-        if include_orderbook and platform1_name == "Polymarket":
+        # Add Orderbook ROI columns only when orderbook data is available
+        if include_orderbook or include_platform2_orderbook:
             headers.append("ROI ASK 1")
             headers.append("ROI ASK 2")
 
         headers.extend([
             "Bet YES on",
             "Bet NO on",
-            f"{platform1_name} YES",
-            f"{platform1_name} NO",
-            f"{platform2_name} YES",
-            f"{platform2_name} NO",
-            f"Shares {platform1_name}",
-            f"Shares {platform2_name}",
+            "YES",
+            "NO",
+            "YES",
+            "NO",
         ])
 
-        if include_orderbook and platform1_name == "Polymarket":
+        if include_orderbook:
+            # Platform1 orderbook columns (Polymarket)
             headers.extend([
-                "YES Bid 1",
-                "YES Bid 1 Size $",
-                "YES Bid 2",
-                "YES Bid 2 Size $",
-                "YES Ask 1",
-                "YES Ask 1 Size $",
-                "YES Ask 2",
-                "YES Ask 2 Size $",
-                "NO Bid 1",
-                "NO Bid 1 Size $",
-                "NO Bid 2",
-                "NO Bid 2 Size $",
-                "NO Ask 1",
-                "NO Ask 1 Size $",
-                "NO Ask 2",
-                "NO Ask 2 Size $",
+                "Bid 1",
+                "Bid 1 Size $",
+                "Bid 2",
+                "Bid 2 Size $",
+                "Ask 1",
+                "Ask 1 Size $",
+                "Ask 2",
+                "Ask 2 Size $",
+                "Bid 1",
+                "Bid 1 Size $",
+                "Bid 2",
+                "Bid 2 Size $",
+                "Ask 1",
+                "Ask 1 Size $",
+                "Ask 2",
+                "Ask 2 Size $",
+            ])
+        
+        if include_platform2_orderbook:
+            # Platform2 orderbook columns (predict.fun)
+            headers.extend([
+                "Bid 1",
+                "Bid 1 Size $",
+                "Bid 2",
+                "Bid 2 Size $",
+                "Ask 1",
+                "Ask 1 Size $",
+                "Ask 2",
+                "Ask 2 Size $",
+                "Bid 1",
+                "Bid 1 Size $",
+                "Bid 2",
+                "Bid 2 Size $",
+                "Ask 1",
+                "Ask 1 Size $",
+                "Ask 2",
+                "Ask 2 Size $",
             ])
         
         return headers
     
+    def _write_parent_headers(self, platform1_name: str, platform2_name: str, include_orderbook: bool = False, include_platform2_orderbook: bool = False, has_orderbook_roi: bool = False):
+        col_offset = 2 if has_orderbook_roi else 0
+        
+        # Merge cells for Platform1 YES/NO parent header
+        platform1_start = 6 + col_offset
+        platform1_end = 7 + col_offset
+        self.ws.merge_cells(start_row=1, start_column=platform1_start, end_row=1, end_column=platform1_end)
+        cell = self.ws.cell(row=1, column=platform1_start)
+        cell.value = platform1_name
+        cell.font = self.styles.header_font
+        cell.fill = self.styles.header_fill
+        cell.alignment = self.styles.header_alignment
+        cell.border = self.styles.border
+        
+        # Merge cells for Platform2 YES/NO parent header
+        platform2_start = 8 + col_offset
+        platform2_end = 9 + col_offset
+        self.ws.merge_cells(start_row=1, start_column=platform2_start, end_row=1, end_column=platform2_end)
+        cell = self.ws.cell(row=1, column=platform2_start)
+        cell.value = platform2_name
+        cell.font = self.styles.header_font
+        cell.fill = self.styles.header_fill
+        cell.alignment = self.styles.header_alignment
+        cell.border = self.styles.border
+        
+        # Merge cells for Platform1 Orderbook YES parent header (8 columns)
+        if include_orderbook:
+            orderbook_start = 10 + col_offset
+            yes_end = orderbook_start + 7
+            self.ws.merge_cells(start_row=1, start_column=orderbook_start, end_row=1, end_column=yes_end)
+            cell = self.ws.cell(row=1, column=orderbook_start)
+            cell.value = f"{platform1_name} YES"
+            cell.font = self.styles.header_font
+            cell.fill = self.styles.header_fill
+            cell.alignment = self.styles.header_alignment
+            cell.border = self.styles.border
+            
+            # Merge cells for Platform1 Orderbook NO parent header
+            no_start = yes_end + 1
+            no_end = no_start + 7
+            self.ws.merge_cells(start_row=1, start_column=no_start, end_row=1, end_column=no_end)
+            cell = self.ws.cell(row=1, column=no_start)
+            cell.value = f"{platform1_name} NO"
+            cell.font = self.styles.header_font
+            cell.fill = self.styles.header_fill
+            cell.alignment = self.styles.header_alignment
+            cell.border = self.styles.border
+        
+        # Merge cells for Platform2 Orderbook YES parent header (8 columns)
+        if include_platform2_orderbook:
+            # Start after platform1 orderbook columns (if present)
+            if include_orderbook:
+                orderbook2_start = 10 + col_offset + 16  # After platform1's 16 columns
+            else:
+                orderbook2_start = 10 + col_offset
+            
+            yes_end = orderbook2_start + 7
+            self.ws.merge_cells(start_row=1, start_column=orderbook2_start, end_row=1, end_column=yes_end)
+            cell = self.ws.cell(row=1, column=orderbook2_start)
+            cell.value = f"{platform2_name} YES"
+            cell.font = self.styles.header_font
+            cell.fill = self.styles.header_fill
+            cell.alignment = self.styles.header_alignment
+            cell.border = self.styles.border
+            
+            # Merge cells for Platform2 Orderbook NO parent header
+            no_start = yes_end + 1
+            no_end = no_start + 7
+            self.ws.merge_cells(start_row=1, start_column=no_start, end_row=1, end_column=no_end)
+            cell = self.ws.cell(row=1, column=no_start)
+            cell.value = f"{platform2_name} NO"
+            cell.font = self.styles.header_font
+            cell.fill = self.styles.header_fill
+            cell.alignment = self.styles.header_alignment
+            cell.border = self.styles.border
+    
     def _write_headers(self, headers: List[str]):
         for col_num, header in enumerate(headers, 1):
-            cell = self.ws.cell(row=1, column=col_num)
+            cell = self.ws.cell(row=2, column=col_num)
             cell.value = header
             cell.font = self.styles.header_font
             cell.fill = self.styles.header_fill
@@ -122,49 +218,49 @@ class SheetBuilder:
             cell.fill = fill
     
     def _write_basic_columns(self, row: int, idx: int, market: Dict, best: Dict, arb: Dict, has_orderbook_roi: bool = False):
-        self._write_cell(row, 1, idx, self.styles.center_alignment)
-        self._write_cell(row, 2, market['question'], self.styles.left_alignment)
-        self._write_cell(row, 3, round(best['roi_percent'], 2), self.styles.center_alignment, '0.00"%"')
+        actual_row = row + 1
+        self._write_cell(actual_row, 1, idx, self.styles.center_alignment)
+        self._write_cell(actual_row, 2, market['question'], self.styles.left_alignment)
+        self._write_cell(actual_row, 3, round(best['roi_percent'], 2), self.styles.center_alignment, '0.00"%"')
     
     def _write_orderbook_roi_columns(self, row: int, opp: Dict):
+        actual_row = row + 1
         orderbook_roi = opp.get('orderbook_roi_percent')
         if orderbook_roi is not None:
-            self._write_cell(row, 4, round(orderbook_roi, 2), self.styles.center_alignment, '0.00"%"')
+            self._write_cell(actual_row, 4, round(orderbook_roi, 2), self.styles.center_alignment, '0.00"%"')
 
         orderbook_roi_ask2 = opp.get('orderbook_roi_ask2_percent')
         if orderbook_roi_ask2 is not None:
-            self._write_cell(row, 5, round(orderbook_roi_ask2, 2), self.styles.center_alignment, '0.00"%"')
+            self._write_cell(actual_row, 5, round(orderbook_roi_ask2, 2), self.styles.center_alignment, '0.00"%"')
 
     def _write_price_columns(self, row: int, arb: Dict, best_strategy: Dict, platform1_name: str, platform2_name: str, col_offset: int = 0):
+        actual_row = row + 1
         strategy_type = best_strategy['type']
         
         # Determine which prices to highlight based on strategy
         if 'Yes on App1, No on App2' in strategy_type:
             # Highlight Platform1 YES and Platform2 NO
-            self._write_cell(row, 6 + col_offset, round(arb['market1_yes'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
-            self._write_cell(row, 7 + col_offset, round(arb['market1_no'], 3), self.styles.currency_alignment, '$0.000')
-            self._write_cell(row, 8 + col_offset, round(arb['market2_yes'], 3), self.styles.currency_alignment, '$0.000')
-            self._write_cell(row, 9 + col_offset, round(arb['market2_no'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
+            self._write_cell(actual_row, 6 + col_offset, round(arb['market1_yes'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
+            self._write_cell(actual_row, 7 + col_offset, round(arb['market1_no'], 3), self.styles.currency_alignment, '$0.000')
+            self._write_cell(actual_row, 8 + col_offset, round(arb['market2_yes'], 3), self.styles.currency_alignment, '$0.000')
+            self._write_cell(actual_row, 9 + col_offset, round(arb['market2_no'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
         else:
             # Highlight Platform1 NO and Platform2 YES
-            self._write_cell(row, 6 + col_offset, round(arb['market1_yes'], 3), self.styles.currency_alignment, '$0.000')
-            self._write_cell(row, 7 + col_offset, round(arb['market1_no'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
-            self._write_cell(row, 8 + col_offset, round(arb['market2_yes'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
-            self._write_cell(row, 9 + col_offset, round(arb['market2_no'], 3), self.styles.currency_alignment, '$0.000')
-
-    def _write_shares_columns(self, row: int, shares_app1: float, shares_app2: float, col_offset: int = 0):
-        self._write_cell(row, 10 + col_offset, round(shares_app1, 2), self.styles.center_alignment, '0.00')
-        self._write_cell(row, 11 + col_offset, round(shares_app2, 2), self.styles.center_alignment, '0.00')
+            self._write_cell(actual_row, 6 + col_offset, round(arb['market1_yes'], 3), self.styles.currency_alignment, '$0.000')
+            self._write_cell(actual_row, 7 + col_offset, round(arb['market1_no'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
+            self._write_cell(actual_row, 8 + col_offset, round(arb['market2_yes'], 3), self.styles.currency_alignment, '$0.000', self.styles.price_highlight)
+            self._write_cell(actual_row, 9 + col_offset, round(arb['market2_no'], 3), self.styles.currency_alignment, '$0.000')
 
     def _write_orderbook_columns(self, row: int, orderbook_data: Dict, best_strategy: Dict, col_offset: int = 0):
         if not orderbook_data:
             return
         
+        actual_row = row + 1
         strategy_type = best_strategy.get('type', '')
         highlight_yes = 'Yes on App1' in strategy_type
         highlight_no = 'No on App1' in strategy_type
         
-        col = 12 + col_offset
+        col = 10 + col_offset
         orderbook_fields = [
             ('yes_bid1_price', '$0.000', False),
             ('yes_bid1_size_usd', '$0.00', False),  # Bid sizes never highlighted
@@ -189,10 +285,54 @@ class SheetBuilder:
             if value is not None:
                 precision = 3 if 'price' in field else 2
                 fill = self.styles.action_highlight if should_highlight else None
-                self._write_cell(row, col, round(value, precision), self.styles.currency_alignment, num_format, fill)
+                self._write_cell(actual_row, col, round(value, precision), self.styles.currency_alignment, num_format, fill)
+            col += 1
+    
+    def _write_platform2_orderbook_columns(self, row: int, orderbook_data: Dict, best_strategy: Dict, col_offset: int = 0, platform1_has_orderbook: bool = False):
+        if not orderbook_data:
+            return
+        
+        actual_row = row + 1
+        strategy_type = best_strategy.get('type', '')
+        # For platform2, check if strategy is buying YES/NO on App2
+        highlight_yes = 'Yes on App2' in strategy_type
+        highlight_no = 'No on App2' in strategy_type
+        
+        # Calculate starting column: after platform1 orderbook if it exists
+        base_col = 10 + col_offset
+        if platform1_has_orderbook:
+            base_col += 16  # Platform1 orderbook has 16 columns
+        
+        col = base_col
+        orderbook_fields = [
+            ('yes_bid1_price', '$0.000', False),
+            ('yes_bid1_size_usd', '$0.00', False),
+            ('yes_bid2_price', '$0.000', False),
+            ('yes_bid2_size_usd', '$0.00', False),
+            ('yes_ask1_price', '$0.000', False),
+            ('yes_ask1_size_usd', '$0.00', highlight_yes),  # Highlight YES Ask sizes when buying YES on App2
+            ('yes_ask2_price', '$0.000', False),
+            ('yes_ask2_size_usd', '$0.00', highlight_yes),
+            ('no_bid1_price', '$0.000', False),
+            ('no_bid1_size_usd', '$0.00', False),
+            ('no_bid2_price', '$0.000', False),
+            ('no_bid2_size_usd', '$0.00', False),
+            ('no_ask1_price', '$0.000', False),
+            ('no_ask1_size_usd', '$0.00', highlight_no),  # Highlight NO Ask sizes when buying NO on App2
+            ('no_ask2_price', '$0.000', False),
+            ('no_ask2_size_usd', '$0.00', highlight_no),
+        ]
+        
+        for field, num_format, should_highlight in orderbook_fields:
+            value = orderbook_data.get(field)
+            if value is not None:
+                precision = 3 if 'price' in field else 2
+                fill = self.styles.action_highlight if should_highlight else None
+                self._write_cell(actual_row, col, round(value, precision), self.styles.currency_alignment, num_format, fill)
             col += 1
     
     def _write_strategy_columns(self, row: int, best_strategy: Dict, platform1_name: str, platform2_name: str, col_offset: int = 0):
+        actual_row = row + 1
         strategy_type = best_strategy['type']
         
         if 'Yes on App1, No on App2' in strategy_type:
@@ -202,15 +342,15 @@ class SheetBuilder:
             yes_platform = platform2_name
             no_platform = platform1_name
         
-        self._write_cell(row, 4 + col_offset, yes_platform, self.styles.center_alignment)
-        self._write_cell(row, 5 + col_offset, no_platform, self.styles.center_alignment)
+        self._write_cell(actual_row, 4 + col_offset, yes_platform, self.styles.center_alignment)
+        self._write_cell(actual_row, 5 + col_offset, no_platform, self.styles.center_alignment)
 
     def _set_column_widths(self, column_widths: Dict[int, int]):
         for col_num, width in column_widths.items():
             self.ws.column_dimensions[get_column_letter(col_num)].width = width
     
     def _finalize_sheet(self):
-        self.ws.freeze_panes = "A2"
+        self.ws.freeze_panes = "A3"
         self.ws.auto_filter.ref = self.ws.dimensions
     
     def build_sheet(self, opportunities: List[Dict],
@@ -221,14 +361,34 @@ class SheetBuilder:
         # Check if any opportunity has orderbook data
         has_orderbook = any(opp.get('polymarket_orderbook') for opp in sorted_opportunities)
         
+        # Check for platform2 orderbook based on platform name
+        has_platform2_orderbook = False
+        if platform2_name == "predict.fun":
+            has_platform2_orderbook = any(opp.get('predict_orderbook') for opp in sorted_opportunities)
+        elif platform2_name == "Opinion":
+            has_platform2_orderbook = any(opp.get('opinion_orderbook') for opp in sorted_opportunities)
+        
         # Check if any opportunity has orderbook ROI
         has_orderbook_roi = any(opp.get('orderbook_roi_percent') is not None for opp in sorted_opportunities)
 
         # Calculate column offset: +2 if orderbook ROI columns are present (ROI ASK 1 and ROI ASK 2)
         col_offset = 2 if has_orderbook_roi else 0
 
-        headers = self._build_headers(platform1_name, platform2_name, include_orderbook=has_orderbook)
+        headers = self._build_headers(platform1_name, platform2_name, include_orderbook=has_orderbook, include_platform2_orderbook=has_platform2_orderbook)
+        
+        # Write parent headers first (row 1) with merged cells
+        self._write_parent_headers(platform1_name, platform2_name, include_orderbook=has_orderbook, include_platform2_orderbook=has_platform2_orderbook, has_orderbook_roi=has_orderbook_roi)
+        
+        # Write sub-headers (row 2) and add header styling to non-merged cells in row 1
         self._write_headers(headers)
+        for col_num in range(1, 6 + col_offset):
+            cell = self.ws.cell(row=1, column=col_num)
+            if cell.value is None:
+                cell.value = ""
+            cell.font = self.styles.header_font
+            cell.fill = self.styles.header_fill
+            cell.alignment = self.styles.header_alignment
+            cell.border = self.styles.border
         
         for idx, opp in enumerate(sorted_opportunities, 1):
             market = opp['market']
@@ -249,13 +409,20 @@ class SheetBuilder:
             self._write_strategy_columns(row, best, platform1_name, platform2_name, col_offset)
             self._write_price_columns(row, arb, best, platform1_name, platform2_name, col_offset)
 
-            shares_app1, shares_app2 = self._calculate_shares(arb, best)
-            self._write_shares_columns(row, shares_app1, shares_app2, col_offset)
-
-            # Write orderbook data if available
+            # Write platform1 orderbook data if available
             orderbook_data = opp.get('polymarket_orderbook')
             if orderbook_data:
                 self._write_orderbook_columns(row, orderbook_data, best, col_offset)
+            
+            # Write platform2 orderbook data if available based on platform name
+            platform2_orderbook = None
+            if platform2_name == "predict.fun":
+                platform2_orderbook = opp.get('predict_orderbook')
+            elif platform2_name == "Opinion":
+                platform2_orderbook = opp.get('opinion_orderbook')
+            
+            if platform2_orderbook:
+                self._write_platform2_orderbook_columns(row, platform2_orderbook, best, col_offset, platform1_has_orderbook=has_orderbook)
 
         column_widths = {
             1: 6,
@@ -271,30 +438,25 @@ class SheetBuilder:
             column_widths.update({
                 6: 13,  # Bet YES on
                 7: 13,  # Bet NO on
-                8: platform1_widths[0] + 1,
-                9: platform1_widths[0] + 1,
-                10: platform2_widths[0] + 1,
-                11: platform2_widths[0] + 1,
-                12: platform1_widths[1] + 1,
-                13: platform2_widths[1] + 1,
+                8: 12,  # Platform1 YES
+                9: 12,  # Platform1 NO
+                10: 12,  # Platform2 YES
+                11: 12,  # Platform2 NO
             })
         else:
             # No orderbook ROI columns
             column_widths.update({
                 4: 13,  # Bet YES on
                 5: 13,  # Bet NO on
-                6: platform1_widths[0] + 1,
-                7: platform1_widths[0] + 1,
-                8: platform2_widths[0] + 1,
-                9: platform2_widths[0] + 1,
-                10: platform1_widths[1] + 1,
-                11: platform2_widths[1] + 1,
+                6: 12,  # Platform1 YES
+                7: 12,  # Platform1 NO
+                8: 12,  # Platform2 YES
+                9: 12,  # Platform2 NO
             })
 
-        # Add orderbook column widths if present
-        has_orderbook = any(opp.get('polymarket_orderbook') for opp in sorted_opportunities)
+        # Add platform1 orderbook column widths if present
         if has_orderbook:
-            orderbook_start_col = 14 if has_orderbook_roi else 12
+            orderbook_start_col = 10 + col_offset
             column_widths.update({
                 orderbook_start_col: 11,  # YES Bid 1
                 orderbook_start_col + 1: 14,  # YES Bid 1 Size $
@@ -312,6 +474,33 @@ class SheetBuilder:
                 orderbook_start_col + 13: 14,  # NO Ask 1 Size $
                 orderbook_start_col + 14: 11,  # NO Ask 2
                 orderbook_start_col + 15: 14,  # NO Ask 2 Size $
+            })
+        
+        # Add platform2 orderbook column widths if present
+        if has_platform2_orderbook:
+            # Start after platform1 orderbook columns (if present)
+            if has_orderbook:
+                orderbook2_start_col = 10 + col_offset + 16
+            else:
+                orderbook2_start_col = 10 + col_offset
+            
+            column_widths.update({
+                orderbook2_start_col: 11,  # YES Bid 1
+                orderbook2_start_col + 1: 14,  # YES Bid 1 Size $
+                orderbook2_start_col + 2: 11,  # YES Bid 2
+                orderbook2_start_col + 3: 14,  # YES Bid 2 Size $
+                orderbook2_start_col + 4: 11,  # YES Ask 1
+                orderbook2_start_col + 5: 14,  # YES Ask 1 Size $
+                orderbook2_start_col + 6: 11,  # YES Ask 2
+                orderbook2_start_col + 7: 14,  # YES Ask 2 Size $
+                orderbook2_start_col + 8: 11,  # NO Bid 1
+                orderbook2_start_col + 9: 14,  # NO Bid 1 Size $
+                orderbook2_start_col + 10: 11,  # NO Bid 2
+                orderbook2_start_col + 11: 14,  # NO Bid 2 Size $
+                orderbook2_start_col + 12: 11,  # NO Ask 1
+                orderbook2_start_col + 13: 14,  # NO Ask 1 Size $
+                orderbook2_start_col + 14: 11,  # NO Ask 2
+                orderbook2_start_col + 15: 14,  # NO Ask 2 Size $
             })
         
         self._set_column_widths(column_widths)
