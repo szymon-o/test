@@ -6,6 +6,7 @@ This script compares prices from two different prediction markets and identifies
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional
+from dateutil import parser as date_parser
 
 from dotenv import load_dotenv
 load_dotenv() 
@@ -35,10 +36,38 @@ def get_price_from_lookup(market: Dict, price_lookup: Dict[str, Dict], match_by_
         if not lookup:
             # Try fuzzy matching by searching for markets with same slug and title
             for key, value in price_lookup.items():
-                stored_slug, stored_title = key.split('||', 1)
-                if stored_slug == category_slug and stored_title == market_title:
+                opinion_market_title = value.get('market_title', '')
+                opinion_slug = value.get('polymarket_slug', '')
+                if opinion_slug == category_slug and opinion_market_title == market_title:
                     lookup = value
                     break
+        
+        if not lookup:
+            # Try date-based matching: parse titles as dates and compare
+            try:
+                # Parse Polymarket title as date (e.g., "December 31" or "June 30")
+                polymarket_date = date_parser.parse(market_title, default=datetime(2026, 1, 1))
+                
+                for key, value in price_lookup.items():
+                    opinion_market_title = value.get('market_title', '')
+                    opinion_slug = value.get('polymarket_slug', '')
+                    
+                    # Only try date matching if slug matches
+                    if opinion_slug != category_slug:
+                        continue
+                    
+                    try:
+                        # Parse Opinion title as date (e.g., "March 31, 2026")
+                        opinion_date = date_parser.parse(opinion_market_title)
+                        
+                        # Compare dates (ignoring time)
+                        if polymarket_date.date() == opinion_date.date():
+                            lookup = value
+                            break
+                    except (ValueError, TypeError):
+                        continue
+            except (ValueError, TypeError):
+                pass
         
         if not lookup:
             return None
@@ -332,7 +361,6 @@ def analyze_markets(markets: List[Dict], price_lookup: Dict[str, Dict], match_by
 
         # Get prices from lookup
         market2_data = get_price_from_lookup(market, price_lookup, match_by_slug)
-
         if not market2_data:
             continue
 
