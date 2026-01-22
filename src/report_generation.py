@@ -31,10 +31,50 @@ class SheetBuilder:
         self.ws = worksheet
         self.styles = styles
     
-    def _sort_opportunities(self, opportunities: List[Dict]) -> List[Dict]:
+    def _expand_opportunities_to_strategy_rows(self, opportunities: List[Dict]) -> List[Dict]:
+        """Expand each opportunity into two strategy rows (strategy1 and strategy2)"""
+        strategy_rows = []
+
+        for opp in opportunities:
+            arb = opp['arbitrage']
+            market = opp['market']
+
+            # Skip opportunities without valid arbitrage data
+            if not arb or 'strategy1' not in arb or 'strategy2' not in arb:
+                continue
+
+            # Create row for strategy1
+            strategy1_row = {
+                'market': market,
+                'market2_data': opp['market2_data'],
+                'arbitrage': arb,
+                'strategy': arb['strategy1'],
+                'polymarket_orderbook': opp.get('polymarket_orderbook'),
+                'predict_orderbook': opp.get('predict_orderbook'),
+                'opinion_orderbook': opp.get('opinion_orderbook'),
+                'orderbook_roi_percent': opp.get('strategy1_orderbook_roi_percent'),
+                'orderbook_roi_ask2_percent': opp.get('strategy1_orderbook_roi_ask2_percent')
+            }
+            strategy_rows.append(strategy1_row)
+
+            # Create row for strategy2
+            strategy2_row = {
+                'market': market,
+                'market2_data': opp['market2_data'],
+                'arbitrage': arb,
+                'strategy': arb['strategy2'],
+                'polymarket_orderbook': opp.get('polymarket_orderbook'),
+                'predict_orderbook': opp.get('predict_orderbook'),
+                'opinion_orderbook': opp.get('opinion_orderbook'),
+                'orderbook_roi_percent': opp.get('strategy2_orderbook_roi_percent'),
+                'orderbook_roi_ask2_percent': opp.get('strategy2_orderbook_roi_ask2_percent')
+            }
+            strategy_rows.append(strategy2_row)
+
+        # Sort all strategy rows by their individual ROI
         return sorted(
-            opportunities,
-            key=lambda x: x['arbitrage']['best_strategy']['roi_percent'] if x['arbitrage']['best_strategy'] else 0,
+            strategy_rows,
+            key=lambda x: x['strategy']['roi_percent'] if x['strategy'] else 0,
             reverse=True
         )
     
@@ -356,20 +396,21 @@ class SheetBuilder:
     def build_sheet(self, opportunities: List[Dict],
                    platform1_name: str, platform2_name: str, 
                    platform1_widths: tuple = (10, 10), platform2_widths: tuple = (10, 10)):
-        sorted_opportunities = self._sort_opportunities(opportunities)
-        
-        # Check if any opportunity has orderbook data
-        has_orderbook = any(opp.get('polymarket_orderbook') for opp in sorted_opportunities)
-        
+        # Expand opportunities into strategy rows and sort by ROI
+        strategy_rows = self._expand_opportunities_to_strategy_rows(opportunities)
+
+        # Check if any strategy row has orderbook data
+        has_orderbook = any(row.get('polymarket_orderbook') for row in strategy_rows)
+
         # Check for platform2 orderbook based on platform name
         has_platform2_orderbook = False
         if platform2_name == "predict.fun":
-            has_platform2_orderbook = any(opp.get('predict_orderbook') for opp in sorted_opportunities)
+            has_platform2_orderbook = any(row.get('predict_orderbook') for row in strategy_rows)
         elif platform2_name == "Opinion":
-            has_platform2_orderbook = any(opp.get('opinion_orderbook') for opp in sorted_opportunities)
-        
-        # Check if any opportunity has orderbook ROI
-        has_orderbook_roi = any(opp.get('orderbook_roi_percent') is not None for opp in sorted_opportunities)
+            has_platform2_orderbook = any(row.get('opinion_orderbook') for row in strategy_rows)
+
+        # Check if any strategy row has orderbook ROI
+        has_orderbook_roi = any(row.get('orderbook_roi_percent') is not None for row in strategy_rows)
 
         # Calculate column offset: +2 if orderbook ROI columns are present (ROI ASK 1 and ROI ASK 2)
         col_offset = 2 if has_orderbook_roi else 0
@@ -390,39 +431,40 @@ class SheetBuilder:
             cell.alignment = self.styles.header_alignment
             cell.border = self.styles.border
         
-        for idx, opp in enumerate(sorted_opportunities, 1):
-            market = opp['market']
-            arb = opp['arbitrage']
-            best = arb['best_strategy']
-            
-            if not best:
+        # Write each strategy row
+        for idx, strategy_row in enumerate(strategy_rows, 1):
+            market = strategy_row['market']
+            arb = strategy_row['arbitrage']
+            strategy = strategy_row['strategy']
+
+            if not strategy:
                 continue
             
             row = idx + 1
             
-            self._write_basic_columns(row, idx, market, best, arb, has_orderbook_roi)
+            self._write_basic_columns(row, idx, market, strategy, arb, has_orderbook_roi)
 
             # Write orderbook ROI columns if available
             if has_orderbook_roi:
-                self._write_orderbook_roi_columns(row, opp)
+                self._write_orderbook_roi_columns(row, strategy_row)
 
-            self._write_strategy_columns(row, best, platform1_name, platform2_name, col_offset)
-            self._write_price_columns(row, arb, best, platform1_name, platform2_name, col_offset)
+            self._write_strategy_columns(row, strategy, platform1_name, platform2_name, col_offset)
+            self._write_price_columns(row, arb, strategy, platform1_name, platform2_name, col_offset)
 
             # Write platform1 orderbook data if available
-            orderbook_data = opp.get('polymarket_orderbook')
+            orderbook_data = strategy_row.get('polymarket_orderbook')
             if orderbook_data:
-                self._write_orderbook_columns(row, orderbook_data, best, col_offset)
-            
+                self._write_orderbook_columns(row, orderbook_data, strategy, col_offset)
+
             # Write platform2 orderbook data if available based on platform name
             platform2_orderbook = None
             if platform2_name == "predict.fun":
-                platform2_orderbook = opp.get('predict_orderbook')
+                platform2_orderbook = strategy_row.get('predict_orderbook')
             elif platform2_name == "Opinion":
-                platform2_orderbook = opp.get('opinion_orderbook')
-            
+                platform2_orderbook = strategy_row.get('opinion_orderbook')
+
             if platform2_orderbook:
-                self._write_platform2_orderbook_columns(row, platform2_orderbook, best, col_offset, platform1_has_orderbook=has_orderbook)
+                self._write_platform2_orderbook_columns(row, platform2_orderbook, strategy, col_offset, platform1_has_orderbook=has_orderbook)
 
         column_widths = {
             1: 6,
